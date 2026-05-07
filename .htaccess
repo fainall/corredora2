@@ -1,12 +1,17 @@
-# Desactivar caché LiteSpeed para archivos JS y CSS
-<FilesMatch "\.(js|css)$">
+# Desactivar caché para todos los archivos estáticos
+<FilesMatch "\.(html|htm|js|css)$">
     Header set Cache-Control "no-cache, no-store, must-revalidate"
     Header set Pragma "no-cache"
     Header set Expires "0"
 </FilesMatch>
 
-# LiteSpeed cache purge
+# LiteSpeed cache purge - deshabilitar completamente
 <IfModule LiteSpeed>
-    CacheDisable public /js/
-    CacheDisable public /css/
+    CacheDisable public /
+</IfModule>
+
+# Forzar revalidación
+<IfModule mod_headers.c>
+    Header unset ETag
+    FileETag None
 </IfModule>
