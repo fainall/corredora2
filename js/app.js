@@ -1260,7 +1260,7 @@ function renderDashList() {
   `).join('');
 }
 
-function switchDashTab(tab) {
+function switchDashTab(tab, keepForm = false) {
   document.querySelectorAll('.dash-tab').forEach(t => t.classList.remove('active'));
   document.getElementById('dashPanelSliderEdit').style.display = tab === 'sliderEdit' ? 'block' : 'none';
   document.getElementById('dashPanelList').style.display = tab === 'list' ? 'block' : 'none';
@@ -1271,7 +1271,11 @@ function switchDashTab(tab) {
   const tabIndex = tab === 'sliderEdit' ? 0 : tab === 'list' ? 1 : tab === 'add' ? 2 : 3;
   if (tabs[tabIndex]) tabs[tabIndex].classList.add('active');
 
-  if (tab === 'add') { resetForm(); setTimeout(initImageUploaderDragDrop, 50); }
+  if (tab === 'add') {
+    // keepForm=true se usa cuando viene de editProperty para no borrar los datos cargados
+    if (!keepForm) resetForm();
+    setTimeout(initImageUploaderDragDrop, 50);
+  }
   if (tab === 'messages') renderMessagesPanel();
 }
 
@@ -1720,7 +1724,12 @@ function editProperty(id) {
   updateGastosConversion();
 
   document.getElementById('formSubmitBtn').innerHTML = '<i class="fas fa-save"></i> Guardar Cambios';
-  switchDashTab('add');
+  switchDashTab('add', true); // keepForm=true para preservar datos cargados
+  // Scroll al inicio del formulario para que el usuario vea el comienzo
+  setTimeout(() => {
+    const panel = document.getElementById('dashPanelAdd');
+    if (panel) panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, 80);
 }
 
 function resetForm() {
