@@ -68,9 +68,9 @@ default-src 'self'; \
 script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; \
 style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; \
 font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com data:; \
-img-src 'self' data: blob: https://images.unsplash.com https://*.supabase.co https://kydvxkiqcjztrcetunaj.supabase.co; \
+img-src 'self' data: blob: https://images.unsplash.com https://*.supabase.co https://kydvxkiqcjztrcetunaj.supabase.co https://maps.gstatic.com https://maps.googleapis.com https://*.googleusercontent.com https://*.ggpht.com; \
 connect-src 'self' https://kydvxkiqcjztrcetunaj.supabase.co wss://kydvxkiqcjztrcetunaj.supabase.co https://mindicador.cl https://api.cmfchile.cl; \
-frame-src 'self' https://www.youtube.com https://player.vimeo.com https://www.youtube-nocookie.com; \
+frame-src 'self' https://www.youtube.com https://player.vimeo.com https://www.youtube-nocookie.com https://www.google.com https://maps.google.com https://www.google.cl; \
 media-src 'self' blob:; \
 object-src 'none'; \
 base-uri 'self'; \
