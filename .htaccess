@@ -1,17 +1,145 @@
-# Desactivar caché para todos los archivos estáticos
+# =====================================================================
+#  GPRB - Configuración de seguridad y caché
+# =====================================================================
+
+# ---------------------------------------------------------------------
+#  1. Forzar HTTPS (redireccionar HTTP → HTTPS)
+# ---------------------------------------------------------------------
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteCond %{HTTPS} !=on
+    RewriteCond %{HTTP:X-Forwarded-Proto} !=https
+    RewriteRule ^(.*)$ https://%{HTTP_HOST}/$1 [R=301,L]
+</IfModule>
+
+# ---------------------------------------------------------------------
+#  2. Bloquear acceso a archivos sensibles
+# ---------------------------------------------------------------------
+# .git, .env, .htaccess, .htpasswd, archivos de respaldo, etc.
+<FilesMatch "(^\.|^\.git|^\.env|\.htaccess$|\.htpasswd$|\.bak$|\.swp$|\.old$|\.orig$|~$|\.log$|\.sql$|composer\.(json|lock)$|package(-lock)?\.json$|yarn\.lock$|node_modules)">
+    Order Allow,Deny
+    Deny from all
+    Satisfy All
+</FilesMatch>
+
+# Bloquear acceso al directorio .git completo
+RedirectMatch 404 /\.git
+RedirectMatch 404 /\.env
+
+# ---------------------------------------------------------------------
+#  3. Desactivar listado de directorios
+# ---------------------------------------------------------------------
+Options -Indexes -MultiViews
+
+# Bloquear ejecución de scripts en uploads
+<FilesMatch "\.(php|phtml|php3|php4|php5|php7|phar|pl|py|jsp|asp|aspx|sh|cgi)$">
+    <If "%{REQUEST_URI} =~ m#^/uploads/#">
+        Require all denied
+    </If>
+</FilesMatch>
+
+# ---------------------------------------------------------------------
+#  4. Headers de seguridad HTTP
+# ---------------------------------------------------------------------
+<IfModule mod_headers.c>
+    # HSTS - Forzar HTTPS por 1 año, incluyendo subdominios
+    Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains"
+
+    # Prevenir clickjacking - no permitir que la web sea embebida en iframes externos
+    Header always set X-Frame-Options "SAMEORIGIN"
+
+    # Prevenir MIME-sniffing
+    Header always set X-Content-Type-Options "nosniff"
+
+    # Política de referer - solo origen al cambiar a HTTPS
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+
+    # Limitar permisos de APIs del navegador
+    Header always set Permissions-Policy "geolocation=(), microphone=(), camera=(), payment=(), usb=(), magnetometer=(), gyroscope=(), accelerometer=()"
+
+    # Cross-Origin policies
+    Header always set Cross-Origin-Opener-Policy "same-origin-allow-popups"
+    Header always set Cross-Origin-Resource-Policy "same-origin"
+
+    # Content Security Policy - whitelist de orígenes permitidos
+    # Permite: self + Supabase + Unsplash + Google Fonts + Font Awesome + WhatsApp + UF API
+    Header always set Content-Security-Policy "\
+default-src 'self'; \
+script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; \
+style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; \
+font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com data:; \
+img-src 'self' data: blob: https://images.unsplash.com https://*.supabase.co https://kydvxkiqcjztrcetunaj.supabase.co; \
+connect-src 'self' https://kydvxkiqcjztrcetunaj.supabase.co wss://kydvxkiqcjztrcetunaj.supabase.co https://mindicador.cl https://api.cmfchile.cl; \
+frame-src 'self' https://www.youtube.com https://player.vimeo.com https://www.youtube-nocookie.com; \
+media-src 'self' blob:; \
+object-src 'none'; \
+base-uri 'self'; \
+form-action 'self'; \
+frame-ancestors 'self'; \
+upgrade-insecure-requests"
+
+    # Quitar header que expone info del servidor
+    Header unset X-Powered-By
+    Header unset Server
+</IfModule>
+
+# ---------------------------------------------------------------------
+#  5. Caché para assets estáticos (imágenes, fuentes) - cachear largo
+#     HTML/JS/CSS - sin caché para que actualizaciones lleguen rápido
+# ---------------------------------------------------------------------
 <FilesMatch "\.(html|htm|js|css)$">
     Header set Cache-Control "no-cache, no-store, must-revalidate"
     Header set Pragma "no-cache"
     Header set Expires "0"
 </FilesMatch>
 
-# LiteSpeed cache purge - deshabilitar completamente
+<FilesMatch "\.(jpg|jpeg|png|gif|webp|svg|ico|woff|woff2|ttf|eot)$">
+    Header set Cache-Control "public, max-age=2592000"
+</FilesMatch>
+
+# LiteSpeed cache purge
 <IfModule LiteSpeed>
     CacheDisable public /
 </IfModule>
 
-# Forzar revalidación
+# Quitar ETag para evitar caché agresivo
 <IfModule mod_headers.c>
     Header unset ETag
-    FileETag None
+</IfModule>
+FileETag None
+
+# ---------------------------------------------------------------------
+#  6. Compresión gzip
+# ---------------------------------------------------------------------
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css text/javascript application/javascript application/x-javascript application/json application/xml image/svg+xml
+</IfModule>
+
+# ---------------------------------------------------------------------
+#  7. Bloquear bots maliciosos comunes
+# ---------------------------------------------------------------------
+<IfModule mod_rewrite.c>
+    RewriteCond %{HTTP_USER_AGENT} (ahrefs|semrush|mj12bot|dotbot|petalbot|seznambot|MegaIndex|BLEXBot|DataForSeoBot|SemanticScholarBot) [NC]
+    RewriteRule .* - [F,L]
+
+    # Bloquear request methods inválidos
+    RewriteCond %{REQUEST_METHOD} ^(TRACE|TRACK|DEBUG|DELETE|PUT)$ [NC]
+    RewriteRule .* - [F,L]
+</IfModule>
+
+# ---------------------------------------------------------------------
+#  8. Limitar tamaño de body (proteger contra DoS por uploads grandes)
+# ---------------------------------------------------------------------
+LimitRequestBody 15728640
+# 15 MB
+
+# ---------------------------------------------------------------------
+#  9. Prohibir hotlinking de imágenes
+# ---------------------------------------------------------------------
+<IfModule mod_rewrite.c>
+    RewriteCond %{HTTP_REFERER} !^$
+    RewriteCond %{HTTP_REFERER} !^https?://(www\.)?corredora2\.opusdigital\.cl [NC]
+    RewriteCond %{HTTP_REFERER} !^https?://(www\.)?gprb\.cl [NC]
+    RewriteCond %{HTTP_REFERER} !^https?://(www\.)?opusdigital\.cl [NC]
+    RewriteRule \.(jpg|jpeg|png|gif|webp)$ - [F,NC,L]
 </IfModule>

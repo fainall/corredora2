@@ -1302,8 +1302,27 @@ function handleMainImageChange(e) {
   reader.readAsDataURL(file);
 }
 
+// ============= SEGURIDAD: validador de URL ==============
+// Solo permite https/http (rechaza javascript:, data:, file:, etc.)
+function isSafeImageUrl(url) {
+  if (typeof url !== 'string' || !url) return false;
+  const trimmed = url.trim();
+  if (trimmed.length > 2048) return false; // límite razonable
+  try {
+    const u = new URL(trimmed, window.location.href);
+    if (u.protocol !== 'https:' && u.protocol !== 'http:') return false;
+    return true;
+  } catch (_) {
+    return false;
+  }
+}
+
 function setMainImageFromUrl(url) {
   if (!url) { clearMainImage(); return; }
+  if (!isSafeImageUrl(url)) {
+    showToast('URL no válida o protocolo no permitido');
+    return;
+  }
   _mainImageState = { kind: 'url', value: url, previewUrl: url };
   document.getElementById('mainImagePreview').src = url;
   document.getElementById('mainUploaderEmpty').style.display = 'none';
@@ -1560,10 +1579,14 @@ function promptMainImageUrl() {
 // URL manual para galería
 function addGalleryUrl() {
   const url = window.prompt('Pega la URL de la imagen a agregar:');
-  if (url && url.trim()) {
-    _galleryItems.push({ kind: 'url', value: url.trim(), previewUrl: url.trim() });
-    renderGalleryPreview();
+  if (!url || !url.trim()) return;
+  const clean = url.trim();
+  if (!isSafeImageUrl(clean)) {
+    showToast('URL no válida o protocolo no permitido');
+    return;
   }
+  _galleryItems.push({ kind: 'url', value: clean, previewUrl: clean });
+  renderGalleryPreview();
 }
 
 // ===================== PROPERTY FORM (ADMIN) =====================
