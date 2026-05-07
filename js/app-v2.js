@@ -752,11 +752,47 @@ function showPage(page, data) {
   closeMenu();
   window.scrollTo({ top: 0, behavior: 'smooth' });
 
+  // ── URL routing: cada página/propiedad tiene su propia URL ───────────────
+  if (page === 'detail' && data) {
+    const prop = getProperties().find(p => p.id === data);
+    const slug = prop ? '-' + prop.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') : '';
+    history.pushState({ page, data }, '', '#propiedad/' + data + slug);
+  } else if (page === 'listings') {
+    history.pushState({ page }, '', '#propiedades');
+  } else if (page === 'home') {
+    history.pushState({ page }, '', window.location.pathname + window.location.search);
+  } else if (page === 'dashboard') {
+    history.pushState({ page }, '', '#dashboard');
+  }
+  // ────────────────────────────────────────────────────────────────────────
+
   if (page === 'home') renderHome();
   if (page === 'listings') renderListings();
   if (page === 'detail' && data) renderDetailAsync(data);
   if (page === 'dashboard') renderDashboard();
 }
+
+// ===================== HASH ROUTING =====================
+function handleHashRoute() {
+  const hash = window.location.hash;
+  if (!hash || hash === '#') return; // ya está en home
+  if (hash === '#propiedades') {
+    showPage('listings');
+  } else if (hash.startsWith('#propiedad/')) {
+    // El slug puede ser "2-galpon-industrial" — solo usamos el número inicial
+    const id = parseInt(hash.slice('#propiedad/'.length), 10);
+    if (!isNaN(id)) {
+      const prop = getProperties().find(p => p.id === id);
+      if (prop) showPage('detail', id);
+      else showPage('listings');
+    }
+  } else if (hash === '#dashboard') {
+    showPage('dashboard');
+  }
+}
+
+// Botón atrás/adelante del navegador
+window.addEventListener('popstate', handleHashRoute);
 
 function toggleMenu() {
   const nav = document.getElementById('mobileNav');
@@ -2034,6 +2070,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   initSlider();
   renderHome();
 
+  // Resolver URL inicial (enlace directo a propiedad, propiedades, etc.)
+  handleHashRoute();
+
   // 3. Cargar datos reales desde Supabase y re-renderizar
   if (window.GPRB_SB) {
     await Promise.all([loadPropertiesFromSB(), loadSliderFromSB()]);
@@ -2041,6 +2080,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (currentPage === 'home') renderHome();
     if (currentPage === 'listings') renderListings();
     if (currentPage === 'dashboard') renderDashboard();
+    // Si se llegó por URL directa a una propiedad, re-renderizar con datos reales
+    if (currentPage === 'detail') {
+      const hash = window.location.hash;
+      if (hash.startsWith('#propiedad/')) {
+        const id = parseInt(hash.slice('#propiedad/'.length), 10);
+        const prop = getProperties().find(p => p.id === id);
+        if (prop) renderDetailAsync(id);
+      }
+    }
   }
 });
 
