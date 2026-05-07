@@ -955,7 +955,7 @@ function renderDetail(propId) {
   const mainImg = galleryImages[0] || '';
   // 5 thumbs visible + 1 counter slot (index 5)
   const THUMB_COUNT = 5;
-  const thumbs = Array.from({length: THUMB_COUNT}, (_, i) => galleryImages[i + 1] || mainImg);
+  const thumbs = galleryImages.slice(1, THUMB_COUNT + 1); // solo imágenes reales, sin duplicar
   const totalPhotos = galleryImages.length;
   const hiddenCount = totalPhotos - (THUMB_COUNT + 1); // photos beyond what's shown
   const statusLabel = prop.status === 'Venta' ? 'Venta' : 'Arriendo';
@@ -1018,12 +1018,13 @@ function renderDetail(propId) {
               <img src="${escapeHtml(src)}" alt="Foto ${i+2}" onerror="imgFallback(this)">
             </div>
           `).join('')}
+          ${hiddenCount > 0 ? `
           <div class="dgm-thumb dgm-thumb-more dgm-clickable" onclick="openPropertyVisor(${prop.id}, ${THUMB_COUNT})">
-            <img src="${escapeHtml(galleryImages[THUMB_COUNT + 1] || mainImg)}" alt="Más fotos" onerror="imgFallback(this)">
+            <img src="${escapeHtml(galleryImages[THUMB_COUNT + 1])}" alt="Más fotos" onerror="imgFallback(this)">
             <div class="dgm-more-overlay">
-              <span class="dgm-more-count">+${Math.max(hiddenCount, totalPhotos > THUMB_COUNT + 1 ? totalPhotos - THUMB_COUNT : 0)}</span>
+              <span class="dgm-more-count">+${hiddenCount}</span>
             </div>
-          </div>
+          </div>` : ''}
         </div>
       </div>
     </div>
