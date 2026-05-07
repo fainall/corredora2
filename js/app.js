@@ -999,19 +999,19 @@ function renderDetail(propId) {
       </div>
 
       <div class="detail-gallery-modern">
-        <div class="dgm-main dgm-clickable">
-          <img src="${escapeHtml(mainImg)}" alt="${escapeHtml(prop.title)}" onerror="imgFallback(this)" onclick="openPropertyVisor(${prop.id}, 0)">
+        <div class="dgm-main dgm-clickable" onclick="openPropertyVisor(${prop.id}, 0)">
+          <img src="${escapeHtml(mainImg)}" alt="${escapeHtml(prop.title)}" onerror="imgFallback(this)">
           <div class="dgm-zoom-hint"><i class="fas fa-search-plus"></i> Ver fotos</div>
         </div>
         <div class="dgm-grid">
           ${thumbs.map((src, i) => `
-            <div class="dgm-thumb dgm-clickable">
-              <img src="${escapeHtml(src)}" alt="Foto ${i+2}" onerror="imgFallback(this)" onclick="openPropertyVisor(${prop.id}, ${i+1})">
+            <div class="dgm-thumb dgm-clickable" onclick="openPropertyVisor(${prop.id}, ${i+1})">
+              <img src="${escapeHtml(src)}" alt="Foto ${i+2}" onerror="imgFallback(this)">
             </div>
           `).join('')}
-          <div class="dgm-thumb dgm-thumb-more dgm-clickable">
+          <div class="dgm-thumb dgm-thumb-more dgm-clickable" onclick="openPropertyVisor(${prop.id}, ${THUMB_COUNT})">
             <img src="${escapeHtml(galleryImages[THUMB_COUNT + 1] || mainImg)}" alt="Más fotos" onerror="imgFallback(this)">
-            <div class="dgm-more-overlay" onclick="openPropertyVisor(${prop.id}, ${THUMB_COUNT})">
+            <div class="dgm-more-overlay">
               <span class="dgm-more-count">+${Math.max(hiddenCount, totalPhotos > THUMB_COUNT + 1 ? totalPhotos - THUMB_COUNT : 0)}</span>
             </div>
           </div>
