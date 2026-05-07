@@ -1337,16 +1337,23 @@ function setGalleryFromUrls(urls) {
 function renderGalleryPreview() {
   const grid = document.getElementById('galleryPreviewGrid');
   if (!grid) return;
+  const last = _galleryItems.length - 1;
   grid.innerHTML = _galleryItems.map((it, i) => `
-    <div class="gallery-preview-item" draggable="true" data-idx="${i}"
-         ondragstart="galleryDragStart(event, ${i})"
-         ondragover="galleryDragOver(event)"
-         ondragleave="galleryDragLeave(event)"
-         ondrop="galleryDrop(event, ${i})"
-         ondragend="galleryDragEnd(event)">
+    <div class="gallery-preview-item" data-idx="${i}">
       <span class="gallery-order-badge">${i + 1}</span>
-      <span class="gallery-drag-handle" title="Arrastra para reordenar"><i class="fas fa-grip-vertical"></i></span>
-      <img src="${escapeAttr(it.previewUrl)}" alt="Imagen ${i + 1}" onerror="imgFallback(this)">
+      <img src="${escapeAttr(it.previewUrl)}" alt="Imagen ${i + 1}" onerror="imgFallback(this)" draggable="false">
+      <div class="gpi-controls-top">
+        <button type="button" class="gpi-btn gpi-move ${i === 0 ? 'is-disabled' : ''}" ${i === 0 ? 'disabled' : ''} onclick="moveGalleryItem(${i}, ${i - 1})" title="Mover a la izquierda">
+          <i class="fas fa-chevron-left"></i>
+        </button>
+        <button type="button" class="gpi-btn gpi-drag-handle" title="Mantén presionado y arrastra para reordenar"
+          onpointerdown="galleryPointerDown(event, ${i})">
+          <i class="fas fa-grip-vertical"></i>
+        </button>
+        <button type="button" class="gpi-btn gpi-move ${i === last ? 'is-disabled' : ''}" ${i === last ? 'disabled' : ''} onclick="moveGalleryItem(${i}, ${i + 1})" title="Mover a la derecha">
+          <i class="fas fa-chevron-right"></i>
+        </button>
+      </div>
       <button type="button" class="btn-remove-item" onclick="removeGalleryItem(${i})" title="Quitar">
         <i class="fas fa-times"></i>
       </button>
@@ -1362,37 +1369,107 @@ function removeGalleryItem(idx) {
   renderGalleryPreview();
 }
 
-// ===== Drag & Drop reorder =====
-let _galleryDragIdx = null;
-function galleryDragStart(e, idx) {
-  _galleryDragIdx = idx;
-  e.currentTarget.classList.add('dragging');
-  if (e.dataTransfer) {
-    e.dataTransfer.effectAllowed = 'move';
-    try { e.dataTransfer.setData('text/plain', String(idx)); } catch(_) {}
-  }
-}
-function galleryDragOver(e) {
-  e.preventDefault();
-  if (e.dataTransfer) e.dataTransfer.dropEffect = 'move';
-  e.currentTarget.classList.add('drag-over');
-}
-function galleryDragLeave(e) {
-  e.currentTarget.classList.remove('drag-over');
-}
-function galleryDrop(e, targetIdx) {
-  e.preventDefault();
-  e.currentTarget.classList.remove('drag-over');
-  if (_galleryDragIdx === null || _galleryDragIdx === targetIdx) return;
-  const moved = _galleryItems.splice(_galleryDragIdx, 1)[0];
-  _galleryItems.splice(targetIdx, 0, moved);
-  _galleryDragIdx = null;
+function moveGalleryItem(fromIdx, toIdx) {
+  if (toIdx < 0 || toIdx >= _galleryItems.length) return;
+  if (fromIdx === toIdx) return;
+  const moved = _galleryItems.splice(fromIdx, 1)[0];
+  _galleryItems.splice(toIdx, 0, moved);
   renderGalleryPreview();
 }
-function galleryDragEnd(e) {
-  e.currentTarget.classList.remove('dragging');
-  document.querySelectorAll('.gallery-preview-item.drag-over').forEach(el => el.classList.remove('drag-over'));
-  _galleryDragIdx = null;
+
+// ===== Pointer-based reorder (más robusto que HTML5 drag) =====
+let _gpDrag = null; // { fromIdx, sourceEl, ghost, lastTargetIdx }
+
+function galleryPointerDown(e, idx) {
+  // Solo botón principal o touch
+  if (e.button !== undefined && e.button !== 0) return;
+  e.preventDefault();
+  e.stopPropagation();
+
+  const sourceEl = e.currentTarget.closest('.gallery-preview-item');
+  if (!sourceEl) return;
+
+  // Crear "ghost" que sigue el cursor
+  const rect = sourceEl.getBoundingClientRect();
+  const ghost = sourceEl.cloneNode(true);
+  ghost.classList.add('gpi-ghost');
+  ghost.style.position = 'fixed';
+  ghost.style.left = rect.left + 'px';
+  ghost.style.top = rect.top + 'px';
+  ghost.style.width = rect.width + 'px';
+  ghost.style.height = rect.height + 'px';
+  ghost.style.pointerEvents = 'none';
+  ghost.style.zIndex = '99999';
+  ghost.style.opacity = '0.85';
+  ghost.style.transform = 'rotate(-2deg) scale(1.05)';
+  ghost.style.boxShadow = '0 12px 28px rgba(0,0,0,.35)';
+  document.body.appendChild(ghost);
+
+  sourceEl.classList.add('is-source');
+
+  _gpDrag = {
+    fromIdx: idx,
+    sourceEl,
+    ghost,
+    offsetX: e.clientX - rect.left,
+    offsetY: e.clientY - rect.top,
+    lastTargetIdx: idx
+  };
+
+  // Listeners en window para que NO se escapen
+  window.addEventListener('pointermove', galleryPointerMove);
+  window.addEventListener('pointerup', galleryPointerUp);
+  window.addEventListener('pointercancel', galleryPointerUp);
+
+  // Capturar el pointer
+  try { e.currentTarget.setPointerCapture(e.pointerId); } catch (_) {}
+}
+
+function galleryPointerMove(e) {
+  if (!_gpDrag) return;
+  e.preventDefault();
+  // Mover ghost
+  _gpDrag.ghost.style.left = (e.clientX - _gpDrag.offsetX) + 'px';
+  _gpDrag.ghost.style.top = (e.clientY - _gpDrag.offsetY) + 'px';
+
+  // Detectar item bajo el cursor
+  const grid = document.getElementById('galleryPreviewGrid');
+  if (!grid) return;
+  const items = Array.from(grid.querySelectorAll('.gallery-preview-item'));
+  let targetIdx = _gpDrag.fromIdx;
+  for (const el of items) {
+    const r = el.getBoundingClientRect();
+    if (e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom) {
+      targetIdx = parseInt(el.dataset.idx, 10);
+      break;
+    }
+  }
+  // Indicador visual
+  items.forEach(el => el.classList.remove('drop-target'));
+  if (targetIdx !== _gpDrag.fromIdx) {
+    const targetEl = items[targetIdx];
+    if (targetEl) targetEl.classList.add('drop-target');
+  }
+  _gpDrag.lastTargetIdx = targetIdx;
+}
+
+function galleryPointerUp(e) {
+  if (!_gpDrag) return;
+  const { fromIdx, lastTargetIdx, ghost, sourceEl } = _gpDrag;
+
+  // Limpiar
+  window.removeEventListener('pointermove', galleryPointerMove);
+  window.removeEventListener('pointerup', galleryPointerUp);
+  window.removeEventListener('pointercancel', galleryPointerUp);
+  if (ghost && ghost.parentNode) ghost.parentNode.removeChild(ghost);
+  if (sourceEl) sourceEl.classList.remove('is-source');
+  document.querySelectorAll('.gallery-preview-item.drop-target').forEach(el => el.classList.remove('drop-target'));
+
+  _gpDrag = null;
+
+  if (lastTargetIdx !== fromIdx && lastTargetIdx >= 0 && lastTargetIdx < _galleryItems.length) {
+    moveGalleryItem(fromIdx, lastTargetIdx);
+  }
 }
 
 function resetImageUploaders() {
@@ -1440,9 +1517,22 @@ function initImageUploaderDragDrop() {
   // --- Gallery uploader ---
   const galleryUploader = document.getElementById('galleryUploader');
   if (galleryUploader) {
-    galleryUploader.addEventListener('dragover', e => { e.preventDefault(); galleryUploader.classList.add('drag-over'); });
-    galleryUploader.addEventListener('dragleave', e => { if (!galleryUploader.contains(e.relatedTarget)) galleryUploader.classList.remove('drag-over'); });
+    // Helper: solo activar si el drag externo trae archivos del SO
+    const isExternalFileDrag = (ev) => {
+      const types = ev.dataTransfer && ev.dataTransfer.types;
+      if (!types) return false;
+      return Array.from(types).includes('Files');
+    };
+    galleryUploader.addEventListener('dragover', e => {
+      if (!isExternalFileDrag(e)) return; // ignorar drags internos
+      e.preventDefault();
+      galleryUploader.classList.add('drag-over');
+    });
+    galleryUploader.addEventListener('dragleave', e => {
+      if (!galleryUploader.contains(e.relatedTarget)) galleryUploader.classList.remove('drag-over');
+    });
     galleryUploader.addEventListener('drop', e => {
+      if (!isExternalFileDrag(e)) return; // no procesar reorder interno
       e.preventDefault();
       galleryUploader.classList.remove('drag-over');
       const files = Array.from(e.dataTransfer.files || []).filter(f => f.type.startsWith('image/'));
