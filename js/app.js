@@ -1157,7 +1157,7 @@ function renderDetail(propId) {
               <form class="contact-form" onsubmit="handleContact(event)">
                 <input type="text" placeholder="Tu nombre" required>
                 <input type="email" placeholder="Tu email" required>
-                <input type="tel" placeholder="Tu teléfono">
+                <input type="tel" value="+56 " placeholder="Tu teléfono">
                 <textarea rows="4" placeholder="Consulta sobre: ${escapeAttr(prop.title)}..."></textarea>
                 <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;">
                   <i class="fas fa-paper-plane"></i> Enviar Consulta
