@@ -5137,6 +5137,25 @@ body.light-mode .spec-val { color: var(--dark); }
 }
 .pv-prop-badges .badge { font-size: 11px; padding: 3px 8px; }
 
+/* ── Detail gallery clickable hover ── */
+.dgm-clickable { cursor: pointer; position: relative; overflow: hidden; }
+.dgm-clickable img { transition: transform 0.35s ease, filter 0.35s ease; }
+.dgm-clickable:hover img { transform: scale(1.04); filter: brightness(0.82); }
+.dgm-zoom-hint {
+  position: absolute; bottom: 14px; left: 50%;
+  transform: translateX(-50%) translateY(8px);
+  background: rgba(0,0,0,0.7); color: #fff;
+  padding: 6px 16px; border-radius: 20px;
+  font-size: 13px; font-weight: 600;
+  display: flex; align-items: center; gap: 7px;
+  opacity: 0; pointer-events: none;
+  transition: all 0.25s ease;
+  white-space: nowrap; backdrop-filter: blur(4px);
+}
+.dgm-clickable:hover .dgm-zoom-hint {
+  opacity: 1; transform: translateX(-50%) translateY(0);
+}
+
 /* ── Gallery count badge ── */
 .card-gallery-count {
   position: absolute; bottom: 52px; right: 10px;

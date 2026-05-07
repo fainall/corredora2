@@ -999,18 +999,19 @@ function renderDetail(propId) {
       </div>
 
       <div class="detail-gallery-modern">
-        <div class="dgm-main">
-          <img src="${escapeHtml(mainImg)}" alt="${escapeHtml(prop.title)}" onerror="imgFallback(this)" onclick="openLightbox(0, ${prop.id})">
+        <div class="dgm-main dgm-clickable">
+          <img src="${escapeHtml(mainImg)}" alt="${escapeHtml(prop.title)}" onerror="imgFallback(this)" onclick="openPropertyVisor(${prop.id}, 0)">
+          <div class="dgm-zoom-hint"><i class="fas fa-search-plus"></i> Ver fotos</div>
         </div>
         <div class="dgm-grid">
           ${thumbs.map((src, i) => `
-            <div class="dgm-thumb">
-              <img src="${escapeHtml(src)}" alt="Foto ${i+2}" onerror="imgFallback(this)" onclick="openLightbox(${i+1}, ${prop.id})">
+            <div class="dgm-thumb dgm-clickable">
+              <img src="${escapeHtml(src)}" alt="Foto ${i+2}" onerror="imgFallback(this)" onclick="openPropertyVisor(${prop.id}, ${i+1})">
             </div>
           `).join('')}
-          <div class="dgm-thumb dgm-thumb-more">
+          <div class="dgm-thumb dgm-thumb-more dgm-clickable">
             <img src="${escapeHtml(galleryImages[THUMB_COUNT + 1] || mainImg)}" alt="Más fotos" onerror="imgFallback(this)">
-            <div class="dgm-more-overlay" onclick="openLightbox(${THUMB_COUNT}, ${prop.id})">
+            <div class="dgm-more-overlay" onclick="openPropertyVisor(${prop.id}, ${THUMB_COUNT})">
               <span class="dgm-more-count">+${Math.max(hiddenCount, totalPhotos > THUMB_COUNT + 1 ? totalPhotos - THUMB_COUNT : 0)}</span>
             </div>
           </div>
@@ -1748,12 +1749,12 @@ let _pvIndex  = 0;
 let _pvPropId = null;
 let _pvTouchStartX = 0;
 
-function openPropertyVisor(id) {
+function openPropertyVisor(id, startIndex = 0) {
   const prop = getProperties().find(p => p.id === id);
   if (!prop) return;
   _pvPropId = id;
   _pvImages  = [prop.image, ...(prop.gallery || [])].filter(Boolean);
-  _pvIndex   = 0;
+  _pvIndex   = Math.min(startIndex, _pvImages.length - 1);
 
   // Título en topbar
   document.getElementById('pvTopTitle').textContent = prop.title;
