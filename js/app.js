@@ -839,7 +839,6 @@ function createPropertyCard(prop) {
   card.innerHTML = `
     <div class="card-image">
       <img src="${escapeAttr(prop.image)}" alt="${escapeAttr(prop.title)}" loading="lazy" onerror="imgFallback(this)">
-      <div class="card-img-zoom" title="Ver fotos"><i class="fas fa-search-plus"></i></div>
       <button type="button" class="card-fav${favActive}" data-fav-id="${prop.id}" aria-label="Agregar a favoritos" title="Favorito"><i class="fas fa-heart"></i></button>
       <div class="card-badges">
         ${statusBadge}
@@ -857,10 +856,10 @@ function createPropertyCard(prop) {
   const favBtn = card.querySelector('.card-fav');
   favBtn.addEventListener('click', (e) => toggleFavorite(prop.id, e));
 
-  // Imagen → abre visor de fotos
+  // Imagen → navega a detalle
   card.querySelector('.card-image').addEventListener('click', (e) => {
     if (e.target.closest('.card-fav')) return;
-    openPropertyVisor(prop.id);
+    showPage('detail', prop.id);
   });
 
   // Body → navega a detalle
