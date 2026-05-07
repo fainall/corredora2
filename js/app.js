@@ -50,7 +50,7 @@ const defaultProperties = [
     description: '• Piso de hormigón reforzado H-30 con sello epóxico\n• Altura al hombro 9 m.t.\n• 3 portones automáticos tipo seccional para camiones\n• 2 andenes de carga con rampa niveladora\n• Oficinas administrativas integradas 120 m²\n• Iluminación LED industrial de alta eficiencia\n• Acceso directo Ruta 68 y Aeropuerto AMB (5 min)\n• Sistema contra incendio NFPA certificado\n• Parque industrial privado con portería 24/7',
     services: ['Internet', 'Agua', 'Luz', 'Gas', 'AndenCargaComun'],
     amenities: ['Aire', 'Generador', 'Montacargas'],
-    security: ['CCTV24h', 'CercoElectrico', 'SensorIncendio', 'Alarma'],
+    security: ['CircuitoCerrado', 'CercoElectrico', 'Alarma'],
     videoUrl: null
   },
   {
@@ -92,7 +92,7 @@ const defaultProperties = [
     description: '• Cámara frigorífica de última generación con redundancia\n• Temperatura controlada entre -25°C y +10°C\n• Pisos epóxicos antideslizantes certificados HACCP\n• Certificación sanitaria vigente SEREMI\n• Sistema de refrigeración industrial redundante\n• 1 andén de carga refrigerado con cortina de aire\n• Parque industrial privado cerrado con acceso Ruta 5 Norte\n• Vigilancia 24/7 con CCTV y guardia permanente',
     services: ['Internet', 'Agua', 'Luz', 'AndenCargaComun', 'BanosPublicos'],
     amenities: ['Aire', 'Generador', 'Bascula'],
-    security: ['CCTV24h', 'CircuitoCerrado', 'RedHumeda', 'SensorIncendio', 'Alarma'],
+    security: ['CircuitoCerrado', 'RedHumeda', 'Alarma'],
     videoUrl: null
   },
   {
@@ -134,7 +134,7 @@ const defaultProperties = [
     description: '• Edificio clase A con certificación LEED\n• 4 salas privadas + sala de reuniones equipada\n• Recepción con mesón ejecutivo\n• Cocina ejecutiva y comedor\n• Climatización central con control individual\n• A pasos Metro Manuel Montt (200 m)\n• 2 estacionamientos propios incluidos\n• Gimnasio y casino en el edificio',
     services: ['Internet', 'Agua', 'Luz', 'Gas', 'Telefonica', 'CasinoAlimentacion', 'BanosPublicos'],
     amenities: ['Aire', 'Calefaccion'],
-    security: ['CCTV24h', 'CircuitoCerrado', 'Alarma'],
+    security: ['CircuitoCerrado', 'Alarma'],
     videoUrl: null
   },
   // ── VENTAS (precios en UF) ─────────────────────────────────────────
@@ -219,7 +219,7 @@ const defaultProperties = [
     description: '• Nave principal 1.900 m² — altura al hombro 10 m.t.\n• Estructura metálica en excelente estado\n• 3 portones automáticos tipo seccional para camiones\n• 2 andenes de carga con rampa niveladora\n• Piso hormigón H-30 con sellador epóxico\n• Cuerpo de oficinas 300 m² — 6 salas privadas\n• Sala de reuniones, baños ejecutivos y casino\n• Uso I1/I2 — acceso Autopista del Sol y Vespucio Sur',
     services: ['Luz', 'Agua', 'Gas', 'Internet', 'AndenCargaComun', 'CasinoAlimentacion'],
     amenities: ['GruaPuente', 'Montacargas', 'Generador'],
-    security: ['CCTV24h', 'CercoElectrico', 'RedHumeda', 'SistemaIncendio', 'Alarma'],
+    security: ['CircuitoCerrado', 'CercoElectrico', 'RedHumeda', 'Alarma'],
     videoUrl: null
   },
   {
@@ -261,7 +261,7 @@ const defaultProperties = [
     description: '• Local de esquina con altísimo flujo peatonal\n• Planta libre 240 m² con techos de 4 metros\n• Vitrinas panorámicas en dos fachadas\n• Dos accesos independientes\n• Bodega subterránea 40 m²\n• Instalaciones eléctricas trifásicas\n• Climatización central con sistema VRF\n• A metros Metro Baquedano y eje Alameda\n• Excelente estado de conservación',
     services: ['Internet', 'Agua', 'Luz', 'Gas', 'Telefonica', 'BanosPublicos'],
     amenities: ['Aire', 'Calefaccion'],
-    security: ['CCTV24h', 'CircuitoCerrado', 'Alarma'],
+    security: ['CircuitoCerrado', 'Alarma'],
     videoUrl: null
   }
 ];
@@ -969,11 +969,11 @@ function renderDetail(propId) {
     'BanosPublicos': 'Baños de Uso Público'
   };
   const SECURITY_LABELS = {
-    'Alarma': 'Alarma', 'CCTV24h': 'CCTV 24 hrs.', 'CircuitoCerrado': 'Circuito Cerrado',
+    'Alarma': 'Alarma',
+    'CCTV24h': 'Circuito Cerrado (TV CCTV)',
+    'CircuitoCerrado': 'Circuito Cerrado (TV CCTV)',
     'CercoElectrico': 'Cerco Eléctrico Perimetral', 'RedHumeda': 'Red Húmeda',
-    'SensorIncendio': 'Sensor de Incendio Interior Bodega',
-    'SistemaIncendio': 'Sistema Contra Incendio',
-    'Incendio': 'Sistema Contra Incendio', 'Conserjeria': 'Conserjería'
+    'Conserjeria': 'Conserjería'
   };
   const labelOf = (map, v) => map[v] || v;
 
