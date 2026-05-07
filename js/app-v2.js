@@ -1841,7 +1841,7 @@ function openPropertyVisor(id, startIndex = 0) {
   let priceHtml;
   const ivaInline = ' <span class="iva-tag">+IVA</span>';
   if (prop.priceUnit === 'UF') {
-    const clpEst = _ufValue ? `≈ $${Math.round(prop.price * _ufValue).toLocaleString('es-CL')}` : '';
+    const clpEst = _ufValue ? `$ ${Math.round(prop.price * _ufValue).toLocaleString('es-CL')}` : '';
     priceHtml = `UF ${formatUF(prop.price)}${prop.status === 'Arriendo' ? '/mes' : ''}${ivaInline}<br><small style="font-size:12px;opacity:.7">${clpEst}</small>`;
   } else {
     priceHtml = `$${(prop.price || 0).toLocaleString('es-CL')}${prop.status === 'Arriendo' ? '/mes' : ''}${ivaInline}`;
@@ -2171,10 +2171,10 @@ function buildPriceText(prop) {
   if (unit === 'UF') {
     const ufStr = formatUF(prop.price);
     const clp = ufToCLP(prop.price);
-    const clpStr = clp ? `≈ $${clp.toLocaleString('es-CL')}` : '';
+    const clpStr = clp ? `$ ${clp.toLocaleString('es-CL')}` : '';
     return { main: `UF ${ufStr}${suffix}`, sub: clpStr };
   }
-  return { main: `$${prop.price.toLocaleString('es-CL')}${suffix}`, sub: '' };
+  return { main: `$ ${prop.price.toLocaleString('es-CL')}${suffix}`, sub: '' };
 }
 
 function buildGastosText(prop) {
@@ -2183,10 +2183,10 @@ function buildGastosText(prop) {
   if (unit === 'UF') {
     const ufStr = formatUF(prop.gastosComunes);
     const clp = ufToCLP(prop.gastosComunes);
-    const sub = clp ? `≈ $${clp.toLocaleString('es-CL')}` : '';
+    const sub = clp ? `$ ${clp.toLocaleString('es-CL')}` : '';
     return { main: `UF ${ufStr}`, sub };
   }
-  return { main: `$${(prop.gastosComunes || 0).toLocaleString('es-CL')}`, sub: '' };
+  return { main: `$ ${(prop.gastosComunes || 0).toLocaleString('es-CL')}`, sub: '' };
 }
 
 async function updateUFConversion() {
@@ -2198,7 +2198,7 @@ async function updateUFConversion() {
   const val = parseDecimalInput(raw);
   if (unit === 'UF' && val && uf) {
     const clp = Math.round(val * uf);
-    hint.textContent = `≈ $${clp.toLocaleString('es-CL')} CLP (UF ${uf.toLocaleString('es-CL')} hoy)`;
+    hint.textContent = `$ ${clp.toLocaleString('es-CL')} (UF ${uf.toLocaleString('es-CL')} hoy)`;
     hint.style.display = 'block';
   } else {
     hint.textContent = '';
@@ -2215,7 +2215,7 @@ async function updateGastosConversion() {
   const val = parseDecimalInput(raw);
   if (unit === 'UF' && val && uf) {
     const clp = Math.round(val * uf);
-    hint.textContent = `≈ $${clp.toLocaleString('es-CL')} CLP`;
+    hint.textContent = `$ ${clp.toLocaleString('es-CL')}`;
     hint.style.display = 'block';
   } else {
     hint.textContent = '';
