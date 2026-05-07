@@ -814,10 +814,11 @@ function closeMenu() {
 function formatPrice(prop) {
   const unit = prop.priceUnit || 'UF';
   const suffix = prop.status === 'Arriendo' ? '/mes' : '';
+  const ivaTag = ' <span class="iva-tag">+IVA</span>';
   if (unit === 'UF') {
-    return `UF ${formatUF(prop.price)}${suffix}`;
+    return `UF ${formatUF(prop.price)}${suffix}${ivaTag}`;
   }
-  return `$${(prop.price || 0).toLocaleString('es-CL')} CLP${suffix}`;
+  return `$${(prop.price || 0).toLocaleString('es-CL')}${suffix}${ivaTag}`;
 }
 
 function createPropertyCard(prop) {
@@ -889,8 +890,28 @@ function animateCounter(el, target, duration = 1200) {
   requestAnimationFrame(update);
 }
 
+function populateHeroLocations(props) {
+  const sel = document.getElementById('heroLocation');
+  if (!sel || sel.tagName !== 'SELECT') return;
+  // Extraer comunas: usar la primera parte de "Comuna, Ciudad" o el string completo
+  const set = new Set();
+  (props || []).forEach(p => {
+    if (!p.location) return;
+    const comuna = String(p.location).split(',')[0].trim();
+    if (comuna) set.add(comuna);
+  });
+  const current = sel.value;
+  const sorted = Array.from(set).sort((a, b) => a.localeCompare(b, 'es'));
+  sel.innerHTML = '<option value="">Todas las comunas</option>' +
+    sorted.map(c => `<option value="${escapeAttr(c)}">${escapeHtml(c)}</option>`).join('');
+  if (current && sorted.includes(current)) sel.value = current;
+}
+
 function renderHome() {
   const props = getProperties();
+
+  // Hero: poblar dropdown de comunas con valores únicos de la DB
+  populateHeroLocations(props);
 
   // Sección Destacadas
   const featuredGrid = document.getElementById('featuredGrid');
@@ -1032,11 +1053,18 @@ function renderDetail(propId) {
       <div class="container">
         <div class="detail-grid">
           <div class="detail-main">
-            <div class="detail-price-tag">
-              ${priceText}
-              ${priceSubText ? `<span class="detail-price-clp">${priceSubText}</span>` : ''}
+            <div class="detail-price-row">
+              <div class="detail-price-tag">
+                <div class="dpt-main">${priceText} <span class="iva-tag">+IVA</span></div>
+                ${priceSubText ? `<div class="dpt-sub">${priceSubText}</div>` : ''}
+              </div>
+              ${(() => { const g = buildGastosText(prop); return g ? `
+                <div class="detail-price-tag detail-gastos-tag">
+                  <div class="dpt-label">Gastos comunes</div>
+                  <div class="dpt-main">${g.main}</div>
+                  ${g.sub ? `<div class="dpt-sub">${g.sub}</div>` : ''}
+                </div>` : ''; })()}
             </div>
-            ${gastosStr ? `<div class="detail-gastos">Gastos comunes: <strong>${gastosStr}</strong></div>` : ''}
 
             <div class="detail-features">
               ${prop.areaBodega > 0 ? `<div class="detail-feature"><i class="fas fa-warehouse"></i><strong>${prop.areaBodega.toLocaleString('es-CL')}m²</strong><span>Bodega</span></div>` : ''}
@@ -1053,14 +1081,14 @@ function renderDetail(propId) {
               <h2>Ficha Técnica</h2>
               <div class="specs-grid">
                 ${prop.type ? `<div class="spec-row"><span class="spec-label"><i class="fas fa-tag"></i> Tipo:</span><span class="spec-val">${escapeHtml(prop.type)}</span></div>` : ''}
-                ${prop.height > 0 ? `<div class="spec-row"><span class="spec-label"><i class="fas fa-arrows-alt-v"></i> Altura al hombro:</span><span class="spec-val">${prop.height} m.t.</span></div>` : ''}
                 ${prop.cumbrera > 0 ? `<div class="spec-row"><span class="spec-label"><i class="fas fa-drafting-compass"></i> Altura cumbrera:</span><span class="spec-val">${prop.cumbrera} m.t.</span></div>` : ''}
+                ${prop.height > 0 ? `<div class="spec-row"><span class="spec-label"><i class="fas fa-arrows-alt-v"></i> Altura al hombro:</span><span class="spec-val">${prop.height} m.t.</span></div>` : ''}
                 ${prop.floorSupport > 0 ? `<div class="spec-row"><span class="spec-label"><i class="fas fa-layer-group"></i> Soporte piso:</span><span class="spec-val">${prop.floorSupport} t/m²</span></div>` : ''}
                 ${prop.age > 0 ? `<div class="spec-row"><span class="spec-label"><i class="fas fa-calendar"></i> Antigüedad:</span><span class="spec-val">${prop.age} año${prop.age !== 1 ? 's' : ''}</span></div>` : ''}
                 ${prop.privateRooms > 0 ? `<div class="spec-row"><span class="spec-label"><i class="fas fa-door-closed"></i> Privados:</span><span class="spec-val">${prop.privateRooms}</span></div>` : ''}
-                ${prop.pricePerM2 > 0 ? `<div class="spec-row"><span class="spec-label"><i class="fas fa-calculator"></i> Precio/m²:</span><span class="spec-val">UF ${formatUF(prop.pricePerM2)}</span></div>` : ''}
+                ${prop.pricePerM2 > 0 ? `<div class="spec-row"><span class="spec-label"><i class="fas fa-calculator"></i> Tarifa m²:</span><span class="spec-val">UF ${formatUF3(prop.pricePerM2)}</span></div>` : ''}
                 ${prop.propertyCode ? `<div class="spec-row"><span class="spec-label"><i class="fas fa-hashtag"></i> Cód. propiedad:</span><span class="spec-val">${escapeHtml(prop.propertyCode)}</span></div>` : ''}
-                ${prop.portalCode ? `<div class="spec-row"><span class="spec-label"><i class="fas fa-globe"></i> Cód. portal:</span><span class="spec-val">${escapeHtml(prop.portalCode)}</span></div>` : ''}
+                ${prop.portalCode ? `<div class="spec-row"><span class="spec-label"><i class="fas fa-globe"></i> Código Portal Inmobiliario:</span><span class="spec-val">${escapeHtml(prop.portalCode)}</span></div>` : ''}
               </div>
             </div>
 
@@ -1219,7 +1247,7 @@ function renderDashList() {
       <td><strong>${escapeHtml(p.title)}</strong></td>
       <td>${escapeHtml(p.type)}</td>
       <td><span class="table-badge ${p.status === 'Venta' ? 'sale' : 'rent'}">${p.status}</span></td>
-      <td><strong>$${p.price.toLocaleString('es-CL')}</strong></td>
+      <td><strong>${(p.priceUnit || 'UF') === 'UF' ? 'UF ' + formatUF(p.price) : '$' + (p.price || 0).toLocaleString('es-CL')}</strong></td>
       <td>${escapeHtml(p.location)}</td>
       <td>
         <div class="table-actions">
@@ -1310,7 +1338,14 @@ function renderGalleryPreview() {
   const grid = document.getElementById('galleryPreviewGrid');
   if (!grid) return;
   grid.innerHTML = _galleryItems.map((it, i) => `
-    <div class="gallery-preview-item">
+    <div class="gallery-preview-item" draggable="true" data-idx="${i}"
+         ondragstart="galleryDragStart(event, ${i})"
+         ondragover="galleryDragOver(event)"
+         ondragleave="galleryDragLeave(event)"
+         ondrop="galleryDrop(event, ${i})"
+         ondragend="galleryDragEnd(event)">
+      <span class="gallery-order-badge">${i + 1}</span>
+      <span class="gallery-drag-handle" title="Arrastra para reordenar"><i class="fas fa-grip-vertical"></i></span>
       <img src="${escapeAttr(it.previewUrl)}" alt="Imagen ${i + 1}" onerror="imgFallback(this)">
       <button type="button" class="btn-remove-item" onclick="removeGalleryItem(${i})" title="Quitar">
         <i class="fas fa-times"></i>
@@ -1325,6 +1360,39 @@ function renderGalleryPreview() {
 function removeGalleryItem(idx) {
   _galleryItems.splice(idx, 1);
   renderGalleryPreview();
+}
+
+// ===== Drag & Drop reorder =====
+let _galleryDragIdx = null;
+function galleryDragStart(e, idx) {
+  _galleryDragIdx = idx;
+  e.currentTarget.classList.add('dragging');
+  if (e.dataTransfer) {
+    e.dataTransfer.effectAllowed = 'move';
+    try { e.dataTransfer.setData('text/plain', String(idx)); } catch(_) {}
+  }
+}
+function galleryDragOver(e) {
+  e.preventDefault();
+  if (e.dataTransfer) e.dataTransfer.dropEffect = 'move';
+  e.currentTarget.classList.add('drag-over');
+}
+function galleryDragLeave(e) {
+  e.currentTarget.classList.remove('drag-over');
+}
+function galleryDrop(e, targetIdx) {
+  e.preventDefault();
+  e.currentTarget.classList.remove('drag-over');
+  if (_galleryDragIdx === null || _galleryDragIdx === targetIdx) return;
+  const moved = _galleryItems.splice(_galleryDragIdx, 1)[0];
+  _galleryItems.splice(targetIdx, 0, moved);
+  _galleryDragIdx = null;
+  renderGalleryPreview();
+}
+function galleryDragEnd(e) {
+  e.currentTarget.classList.remove('dragging');
+  document.querySelectorAll('.gallery-preview-item.drag-over').forEach(el => el.classList.remove('drag-over'));
+  _galleryDragIdx = null;
 }
 
 function resetImageUploaders() {
@@ -1771,11 +1839,12 @@ function openPropertyVisor(id, startIndex = 0) {
 
   // Precio
   let priceHtml;
+  const ivaInline = ' <span class="iva-tag">+IVA</span>';
   if (prop.priceUnit === 'UF') {
-    const clpEst = _ufValue ? `≈ ${Math.round(prop.price * _ufValue).toLocaleString('es-CL')} CLP` : '';
-    priceHtml = `UF ${prop.price.toLocaleString('es-CL')}${prop.status === 'Arriendo' ? '/mes' : ''}<br><small style="font-size:12px;opacity:.7">${clpEst}</small>`;
+    const clpEst = _ufValue ? `≈ $${Math.round(prop.price * _ufValue).toLocaleString('es-CL')}` : '';
+    priceHtml = `UF ${formatUF(prop.price)}${prop.status === 'Arriendo' ? '/mes' : ''}${ivaInline}<br><small style="font-size:12px;opacity:.7">${clpEst}</small>`;
   } else {
-    priceHtml = `$${(prop.price || 0).toLocaleString('es-CL')} CLP${prop.status === 'Arriendo' ? '/mes' : ''}`;
+    priceHtml = `$${(prop.price || 0).toLocaleString('es-CL')}${prop.status === 'Arriendo' ? '/mes' : ''}${ivaInline}`;
   }
   document.getElementById('pvPropPrice').innerHTML = priceHtml;
 
@@ -2070,6 +2139,13 @@ function formatUF(uf) {
   return isNaN(num) ? '' : num.toLocaleString('es-CL', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
 }
 
+function formatUF3(uf) {
+  // Formato con hasta 3 decimales (para Tarifa m²)
+  if (uf == null) return '';
+  const num = parseFloat(String(uf).replace(',', '.'));
+  return isNaN(num) ? '' : num.toLocaleString('es-CL', { minimumFractionDigits: 0, maximumFractionDigits: 3 });
+}
+
 function parseDecimalInput(val) {
   // Permite coma o punto como separador decimal
   if (val == null || val === '') return null;
@@ -2095,10 +2171,22 @@ function buildPriceText(prop) {
   if (unit === 'UF') {
     const ufStr = formatUF(prop.price);
     const clp = ufToCLP(prop.price);
-    const clpStr = clp ? ` ≈ ${clp.toLocaleString('es-CL')} CLP` : '';
+    const clpStr = clp ? `≈ $${clp.toLocaleString('es-CL')}` : '';
     return { main: `UF ${ufStr}${suffix}`, sub: clpStr };
   }
-  return { main: `$${prop.price.toLocaleString('es-CL')} CLP${suffix}`, sub: '' };
+  return { main: `$${prop.price.toLocaleString('es-CL')}${suffix}`, sub: '' };
+}
+
+function buildGastosText(prop) {
+  if (!prop.gastosComunes) return null;
+  const unit = prop.gastosComunesUnit || 'UF';
+  if (unit === 'UF') {
+    const ufStr = formatUF(prop.gastosComunes);
+    const clp = ufToCLP(prop.gastosComunes);
+    const sub = clp ? `≈ $${clp.toLocaleString('es-CL')}` : '';
+    return { main: `UF ${ufStr}`, sub };
+  }
+  return { main: `$${(prop.gastosComunes || 0).toLocaleString('es-CL')}`, sub: '' };
 }
 
 async function updateUFConversion() {
