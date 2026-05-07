@@ -970,10 +970,16 @@ function renderDetail(propId) {
   };
   const SECURITY_LABELS = {
     'Alarma': 'Alarma',
-    'CCTV24h': 'Circuito Cerrado (TV CCTV)',
-    'CircuitoCerrado': 'Circuito Cerrado (TV CCTV)',
+    'CCTV24h': 'Circuito Cerrado (CCTV TV)',
+    'CircuitoCerrado': 'Circuito Cerrado (CCTV TV)',
     'CercoElectrico': 'Cerco Eléctrico Perimetral', 'RedHumeda': 'Red Húmeda',
-    'Conserjeria': 'Conserjería'
+    'Conserjeria': 'Conserjería',
+    'SensorHumo': 'Sensor de Humo'
+  };
+  const AMENITY_LABELS = {
+    'Aire': 'Aire Acondicionado', 'Bascula': 'Báscula', 'Calefaccion': 'Calefacción',
+    'Generador': 'Generador Eléctrico', 'Ventilacion': 'Sistema de Ventilación',
+    'Montacargas': 'Montacargas', 'GruaPuente': 'Puente Grúa'
   };
   const labelOf = (map, v) => map[v] || v;
 
@@ -1046,8 +1052,8 @@ function renderDetail(propId) {
               <h2>Ficha Técnica</h2>
               <div class="specs-grid">
                 ${prop.type ? `<div class="spec-row"><span class="spec-label"><i class="fas fa-tag"></i> Tipo:</span><span class="spec-val">${escapeHtml(prop.type)}</span></div>` : ''}
-                ${prop.warehouseType ? `<div class="spec-row"><span class="spec-label"><i class="fas fa-warehouse"></i> Tipo bodega:</span><span class="spec-val">${escapeHtml(prop.warehouseType)}</span></div>` : ''}
                 ${prop.height > 0 ? `<div class="spec-row"><span class="spec-label"><i class="fas fa-arrows-alt-v"></i> Altura al hombro:</span><span class="spec-val">${prop.height} m.t.</span></div>` : ''}
+                ${prop.cumbrera > 0 ? `<div class="spec-row"><span class="spec-label"><i class="fas fa-drafting-compass"></i> Altura cumbrera:</span><span class="spec-val">${prop.cumbrera} m.t.</span></div>` : ''}
                 ${prop.floorSupport > 0 ? `<div class="spec-row"><span class="spec-label"><i class="fas fa-layer-group"></i> Soporte piso:</span><span class="spec-val">${prop.floorSupport} t/m²</span></div>` : ''}
                 ${prop.age > 0 ? `<div class="spec-row"><span class="spec-label"><i class="fas fa-calendar"></i> Antigüedad:</span><span class="spec-val">${prop.age} año${prop.age !== 1 ? 's' : ''}</span></div>` : ''}
                 ${prop.privateRooms > 0 ? `<div class="spec-row"><span class="spec-label"><i class="fas fa-door-closed"></i> Privados:</span><span class="spec-val">${prop.privateRooms}</span></div>` : ''}
@@ -1074,7 +1080,7 @@ function renderDetail(propId) {
             <div class="detail-section">
               <h2>Comodidades y Equipamiento</h2>
               <div class="detail-amenities">
-                ${prop.amenities.map(a => `<div class="detail-amenity"><i class="fas fa-check-circle"></i> ${escapeHtml(a)}</div>`).join('')}
+                ${prop.amenities.map(a => `<div class="detail-amenity"><i class="fas fa-check-circle"></i> ${escapeHtml(labelOf(AMENITY_LABELS, a))}</div>`).join('')}
               </div>
             </div>` : ''}
 
@@ -1439,7 +1445,7 @@ function saveProperty(e) {
     parking: parseInt(document.getElementById('fParking').value) || 0,
     portones: parseInt(document.getElementById('fPortones')?.value) || null,
     andenes: parseInt(document.getElementById('fAndenes')?.value) || null,
-    warehouseType: document.getElementById('fWarehouseType').value || null,
+    cumbrera: parseDecimalInput(document.getElementById('fCumbrera')?.value) || null,
     privateRooms: parseInt(document.getElementById('fPrivateRooms').value) || 0,
     age: parseInt(document.getElementById('fAge').value) || null,
     height: parseDecimalInput(document.getElementById('fHeight').value) || null,
@@ -1533,7 +1539,7 @@ function editProperty(id) {
   document.getElementById('fParking').value = prop.parking || '';
   if (document.getElementById('fPortones')) document.getElementById('fPortones').value = prop.portones || '';
   if (document.getElementById('fAndenes')) document.getElementById('fAndenes').value = prop.andenes || '';
-  document.getElementById('fWarehouseType').value = prop.warehouseType || '';
+  if (document.getElementById('fCumbrera')) document.getElementById('fCumbrera').value = prop.cumbrera != null ? String(prop.cumbrera).replace('.', ',') : '';
   document.getElementById('fPrivateRooms').value = prop.privateRooms || '';
   document.getElementById('fAge').value = prop.age || '';
   document.getElementById('fHeight').value = prop.height != null ? String(prop.height).replace('.', ',') : '';

@@ -661,13 +661,8 @@
                   <input type="number" id="fAndenes" min="0" placeholder="1">
                 </div>
                 <div class="form-group">
-                  <label>Tipo de Bodega</label>
-                  <select id="fWarehouseType">
-                    <option value="">Seleccionar...</option>
-                    <option value="Abierta">Abierta</option>
-                    <option value="Cerrada">Cerrada</option>
-                    <option value="Mixta">Mixta</option>
-                  </select>
+                  <label>Altura de la Cumbrera (m.t.)</label>
+                  <input type="text" id="fCumbrera" placeholder="Ej: 10,5" inputmode="decimal">
                 </div>
                 <div class="form-group">
                   <label>Numero de Privados</label>
@@ -794,7 +789,7 @@
                 <label class="checkbox-label"><input type="checkbox" name="amenities" value="Generador"> <span>Generador Eléctrico</span></label>
                 <label class="checkbox-label"><input type="checkbox" name="amenities" value="Ventilacion"> <span>Sistema de Ventilación</span></label>
                 <label class="checkbox-label"><input type="checkbox" name="amenities" value="Montacargas"> <span>Montacargas</span></label>
-                <label class="checkbox-label"><input type="checkbox" name="amenities" value="GruaPuente"> <span>Grúa Puente</span></label>
+                <label class="checkbox-label"><input type="checkbox" name="amenities" value="GruaPuente"> <span>Puente Grúa</span></label>
               </div>
             </div>
 
@@ -802,7 +797,8 @@
               <h3><i class="fas fa-lock"></i> Seguridad</h3>
               <div class="amenities-grid">
                 <label class="checkbox-label"><input type="checkbox" name="security" value="Alarma"> <span>Alarma</span></label>
-                <label class="checkbox-label"><input type="checkbox" name="security" value="CircuitoCerrado"> <span>Circuito Cerrado (TV CCTV)</span></label>
+                <label class="checkbox-label"><input type="checkbox" name="security" value="CircuitoCerrado"> <span>Circuito Cerrado (CCTV TV)</span></label>
+                <label class="checkbox-label"><input type="checkbox" name="security" value="SensorHumo"> <span>Sensor de Humo</span></label>
                 <label class="checkbox-label"><input type="checkbox" name="security" value="CercoElectrico"> <span>Cerco Eléctrico Perimetral</span></label>
                 <label class="checkbox-label"><input type="checkbox" name="security" value="RedHumeda"> <span>Red Húmeda</span></label>
               </div>
