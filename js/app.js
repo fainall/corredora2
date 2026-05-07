@@ -812,8 +812,12 @@ function closeMenu() {
 
 // ===================== RENDER PROPERTY CARD =====================
 function formatPrice(prop) {
-  const amount = `$${(prop.price || 0).toLocaleString('es-CL')} CLP`;
-  return prop.status === 'Arriendo' ? `${amount}/mes` : amount;
+  const unit = prop.priceUnit || 'UF';
+  const suffix = prop.status === 'Arriendo' ? '/mes' : '';
+  if (unit === 'UF') {
+    return `UF ${formatUF(prop.price)}${suffix}`;
+  }
+  return `$${(prop.price || 0).toLocaleString('es-CL')} CLP${suffix}`;
 }
 
 function createPropertyCard(prop) {
@@ -2121,6 +2125,17 @@ async function updateGastosConversion() {
   } else {
     hint.textContent = '';
     hint.style.display = 'none';
+  }
+}
+
+function calcSuperficieTotal() {
+  const bodega  = parseDecimalInput(document.getElementById('fAreaBodega')?.value)  || 0;
+  const oficina = parseDecimalInput(document.getElementById('fAreaOficina')?.value) || 0;
+  const altillo = parseDecimalInput(document.getElementById('fAreaAltillo')?.value) || 0;
+  // Suma bodega + altillo siempre; oficina solo si > 0
+  const total = bodega + (oficina > 0 ? oficina : 0) + altillo;
+  if (total > 0) {
+    document.getElementById('fArea').value = String(total).replace('.', ',');
   }
 }
 

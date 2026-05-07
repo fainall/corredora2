@@ -630,18 +630,18 @@
                 <!-- m² en orden solicitado -->
                 <div class="form-group">
                   <label>m² Bodega</label>
-                  <input type="text" id="fAreaBodega" placeholder="Ej: 850,5" inputmode="decimal">
+                  <input type="text" id="fAreaBodega" placeholder="Ej: 850,5" inputmode="decimal" oninput="calcSuperficieTotal()">
                 </div>
                 <div class="form-group">
-                  <label>m² Oficina</label>
-                  <input type="text" id="fAreaOficina" placeholder="Ej: 120" inputmode="decimal">
+                  <label>m² Oficina <small style="opacity:0.6;font-weight:400">(0 si no aplica)</small></label>
+                  <input type="text" id="fAreaOficina" placeholder="0" inputmode="decimal" oninput="calcSuperficieTotal()">
                 </div>
                 <div class="form-group">
                   <label>m² Altillo</label>
-                  <input type="text" id="fAreaAltillo" placeholder="Ej: 60" inputmode="decimal">
+                  <input type="text" id="fAreaAltillo" placeholder="Ej: 60" inputmode="decimal" oninput="calcSuperficieTotal()">
                 </div>
                 <div class="form-group">
-                  <label>Superficie Total (m²) *</label>
+                  <label>Superficie Total (m²) * <small style="opacity:0.6;font-weight:400">auto-calculado</small></label>
                   <input type="text" id="fArea" required placeholder="Ej: 1.030,5" inputmode="decimal">
                 </div>
                 <div class="form-group">

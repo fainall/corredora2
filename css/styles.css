@@ -4855,7 +4855,7 @@ body.light-mode .section-testimonials { background: #111f30; }
   border: 1.5px solid var(--border);
   border-radius: 8px;
   overflow: hidden;
-  background: #fff;
+  background: rgba(255,255,255,0.05);
 }
 body.light-mode .price-input-wrap { background: #fff; }
 .price-unit-select {
@@ -4867,9 +4867,12 @@ body.light-mode .price-input-wrap { background: #fff; }
   font-size: 0.85rem;
   font-weight: 700;
   color: var(--secondary);
-  background: #f5f7fa;
+  background: rgba(255,255,255,0.08);
   cursor: pointer;
 }
+body.light-mode .price-unit-select { background: #f5f7fa; color: var(--secondary); }
+.price-input-wrap input { color: var(--text); }
+body.light-mode .price-input-wrap input { color: #1a1a1a; }
 .price-input-wrap input {
   border: none !important;
   border-radius: 0 !important;
