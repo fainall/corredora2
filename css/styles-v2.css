@@ -3159,6 +3159,7 @@ body { overscroll-behavior-y: contain; }
   .topbar { display: none; }
   .logo-tag { display: none; }
   .header-actions .header-icon-btn { display: none; }
+  #navAdmin { display: none !important; }
   .video-badge { display: none; }
 }
 
