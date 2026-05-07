@@ -1253,6 +1253,7 @@ function renderDashList() {
         <div class="table-actions">
           <button class="table-btn view" title="Ver" onclick="showPage('detail', ${p.id})"><i class="fas fa-eye"></i></button>
           <button class="table-btn edit" title="Editar" onclick="editProperty(${p.id})"><i class="fas fa-edit"></i></button>
+          <button class="table-btn duplicate" title="Duplicar" onclick="duplicateProperty(${p.id})"><i class="fas fa-clone"></i></button>
           <button class="table-btn delete" title="Eliminar" onclick="confirmDelete(${p.id})"><i class="fas fa-trash"></i></button>
         </div>
       </td>
@@ -1746,6 +1747,35 @@ function resetForm() {
   if (h1) { h1.textContent = ''; h1.style.display = 'none'; }
   if (h2) { h2.textContent = ''; h2.style.display = 'none'; }
   updatePriceLabel();
+}
+
+// ===================== DUPLICATE =====================
+async function duplicateProperty(id) {
+  if (!isLoggedIn()) return;
+  const props = getProperties();
+  const original = props.find(p => p.id === id);
+  if (!original) { showToast('Propiedad no encontrada'); return; }
+
+  // Clone profundo y limpio (excluye id, slug, timestamps)
+  const clone = JSON.parse(JSON.stringify(original));
+  delete clone.id;
+  delete clone.created_at;
+  delete clone.updated_at;
+  // Sufijo "(Copia)" en el título para distinguirla
+  clone.title = (clone.title || 'Sin título') + ' (Copia)';
+  // Si tenía un código de propiedad, evitar colisiones agregando -COPY
+  if (clone.propertyCode) clone.propertyCode = clone.propertyCode + '-COPY';
+
+  try {
+    showToast('Duplicando propiedad...');
+    const created = await window.GPRB_SB.createProperty(clone);
+    _propertiesCache.unshift(created);
+    showToast('Propiedad duplicada exitosamente');
+    renderDashList();
+  } catch (err) {
+    console.error('duplicateProperty', err);
+    showToast('Error al duplicar: ' + (err.message || 'intenta de nuevo'));
+  }
 }
 
 // ===================== DELETE =====================

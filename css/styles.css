@@ -2190,6 +2190,8 @@ body > #page-listings .card-feature { color: var(--text-light); }
 .table-btn.delete:hover { background: var(--red); color: white; border-color: transparent; }
 .table-btn.view { background: rgba(0,200,150,0.15); color: var(--primary); border: 1px solid rgba(0,200,150,0.2); }
 .table-btn.view:hover { background: var(--primary); color: white; border-color: transparent; }
+.table-btn.duplicate { background: rgba(155,89,182,0.15); color: #b07cc6; border: 1px solid rgba(155,89,182,0.2); }
+.table-btn.duplicate:hover { background: #9b59b6; color: white; border-color: transparent; }
 
 /* ===================== MODAL ===================== */
 .modal-overlay {
@@ -2664,6 +2666,9 @@ body > #page-listings .card-feature { color: var(--text-light); }
 .social-links a:hover { background: var(--primary); padding-left: 0; }
 
 .footer-bottom { margin-top: 40px; padding: 20px 0; border-top: 1px solid rgba(255,255,255,0.1); text-align: center; font-size: 0.88rem; }
+.footer-bottom .footer-dev { margin-top: 6px; font-size: 0.78rem; opacity: 0.65; }
+.footer-bottom .footer-dev a { color: var(--primary); text-decoration: none; transition: opacity .2s; }
+.footer-bottom .footer-dev a:hover { opacity: 0.8; text-decoration: underline; }
 
 /* ===================== RESPONSIVE (Mobile-first optimized) ===================== */
 
