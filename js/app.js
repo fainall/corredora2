@@ -1173,8 +1173,8 @@ function renderDetail(propId) {
               <h3>Detalles</h3>
               <div class="agent-detail"><i class="fas fa-tag"></i> <strong>Tipo:</strong>&nbsp;${escapeHtml(prop.type)}</div>
               <div class="agent-detail"><i class="fas fa-handshake"></i> <strong>Operación:</strong>&nbsp;${prop.status}</div>
-              ${prop.propertyCode ? `<div class="agent-detail"><i class="fas fa-hashtag"></i> <strong>Código:</strong>&nbsp;${escapeHtml(prop.propertyCode)}</div>` : ''}
-              ${prop.portalCode ? `<div class="agent-detail"><i class="fas fa-globe"></i> <strong>Portal:</strong>&nbsp;${escapeHtml(prop.portalCode)}</div>` : ''}
+              ${prop.propertyCode ? `<div class="agent-detail"><i class="fas fa-hashtag"></i> <strong>Código de propiedad:</strong>&nbsp;${escapeHtml(prop.propertyCode)}</div>` : ''}
+              ${prop.portalCode ? `<div class="agent-detail"><i class="fas fa-globe"></i> <strong>Código Portal Inmobiliario:</strong>&nbsp;${escapeHtml(prop.portalCode)}</div>` : ''}
               ${prop.area > 0 ? `<div class="agent-detail"><i class="fas fa-ruler-combined"></i> <strong>Superficie:</strong>&nbsp;${prop.area.toLocaleString('es-CL')} m²</div>` : ''}
               ${gastosStr ? `<div class="agent-detail"><i class="fas fa-receipt"></i> <strong>Gastos com.:</strong>&nbsp;${gastosStr}</div>` : ''}
             </div>
