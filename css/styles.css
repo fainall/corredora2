@@ -257,8 +257,9 @@ img { max-width: 100%; display: block; }
   background: var(--secondary); transform: scale(1.3); width: 28px; border-radius: 5px;
 }
 
-@media (max-width: 600px) {
+@media (max-width: 768px) {
   .hero-slider-prev, .hero-slider-next { display: none; }
+  .hero-slider-dots { display: none; }
 }
 
 .hero-simple-inner {
