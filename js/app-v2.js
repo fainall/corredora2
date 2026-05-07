@@ -755,7 +755,9 @@ function showPage(page, data) {
   // ── URL routing: cada página/propiedad tiene su propia URL ───────────────
   if (page === 'detail' && data) {
     const prop = getProperties().find(p => p.id === data);
-    const slug = prop ? '-' + prop.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') : '';
+    const slug = prop ? '-' + prop.title.toLowerCase()
+      .normalize('NFD').replace(/[̀-ͯ]/g, '')  // quitar acentos
+      .replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') : '';
     history.pushState({ page, data }, '', '#propiedad/' + data + slug);
   } else if (page === 'listings') {
     history.pushState({ page }, '', '#propiedades');
