@@ -829,17 +829,24 @@ function createPropertyCard(prop) {
   if (prop.parking > 0) features.push(`<span class="card-feature"><i class="fas fa-car"></i> ${prop.parking}</span>`);
   if (prop.bathrooms > 0) features.push(`<span class="card-feature"><i class="fas fa-bath"></i> ${prop.bathrooms}</span>`);
 
+  const galleryCount = [prop.image, ...(prop.gallery || [])].filter(Boolean).length;
+  const galleryBadge = galleryCount > 1
+    ? `<div class="card-gallery-count"><i class="fas fa-images"></i> ${galleryCount}</div>`
+    : '';
+
   const card = document.createElement('div');
   card.className = 'property-card';
   card.innerHTML = `
     <div class="card-image">
       <img src="${escapeAttr(prop.image)}" alt="${escapeAttr(prop.title)}" loading="lazy" onerror="imgFallback(this)">
+      <div class="card-img-zoom" title="Ver fotos"><i class="fas fa-search-plus"></i></div>
       <button type="button" class="card-fav${favActive}" data-fav-id="${prop.id}" aria-label="Agregar a favoritos" title="Favorito"><i class="fas fa-heart"></i></button>
       <div class="card-badges">
         ${statusBadge}
         <span class="badge badge-type">${escapeHtml(prop.type)}</span>
       </div>
       <div class="card-price">${priceText}</div>
+      ${galleryBadge}
     </div>
     <div class="card-body">
       <h3>${escapeHtml(prop.title)}</h3>
@@ -849,10 +856,18 @@ function createPropertyCard(prop) {
   `;
   const favBtn = card.querySelector('.card-fav');
   favBtn.addEventListener('click', (e) => toggleFavorite(prop.id, e));
-  card.addEventListener('click', (e) => {
+
+  // Imagen → abre visor de fotos
+  card.querySelector('.card-image').addEventListener('click', (e) => {
     if (e.target.closest('.card-fav')) return;
+    openPropertyVisor(prop.id);
+  });
+
+  // Body → navega a detalle
+  card.querySelector('.card-body').addEventListener('click', () => {
     showPage('detail', prop.id);
   });
+
   return card;
 }
 
@@ -1727,6 +1742,129 @@ function scrollToTop() {
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
+// ===================== PROPERTY VISOR =====================
+let _pvImages = [];
+let _pvIndex  = 0;
+let _pvPropId = null;
+let _pvTouchStartX = 0;
+
+function openPropertyVisor(id) {
+  const prop = getProperties().find(p => p.id === id);
+  if (!prop) return;
+  _pvPropId = id;
+  _pvImages  = [prop.image, ...(prop.gallery || [])].filter(Boolean);
+  _pvIndex   = 0;
+
+  // Título en topbar
+  document.getElementById('pvTopTitle').textContent = prop.title;
+
+  // Precio
+  let priceHtml;
+  if (prop.priceUnit === 'UF') {
+    const clpEst = _ufValue ? `≈ ${Math.round(prop.price * _ufValue).toLocaleString('es-CL')} CLP` : '';
+    priceHtml = `UF ${prop.price.toLocaleString('es-CL')}${prop.status === 'Arriendo' ? '/mes' : ''}<br><small style="font-size:12px;opacity:.7">${clpEst}</small>`;
+  } else {
+    priceHtml = `$${(prop.price || 0).toLocaleString('es-CL')} CLP${prop.status === 'Arriendo' ? '/mes' : ''}`;
+  }
+  document.getElementById('pvPropPrice').innerHTML = priceHtml;
+
+  // Badges
+  const statusCls = prop.status === 'Venta' ? 'badge-sale' : 'badge-rent';
+  document.getElementById('pvPropBadges').innerHTML =
+    `<span class="badge ${statusCls}">${prop.status}</span>
+     <span class="badge badge-type">${escapeHtml(prop.type)}</span>`;
+
+  // Info
+  document.getElementById('pvPropTitle').textContent = prop.title;
+  document.getElementById('pvPropLocation').innerHTML =
+    `<i class="fas fa-map-marker-alt"></i> ${escapeHtml(prop.location)}`;
+
+  const specs = [];
+  if (prop.area)      specs.push(`<span><i class="fas fa-ruler-combined"></i> ${prop.area.toLocaleString('es-CL')} m²</span>`);
+  if (prop.areaBodega > 0) specs.push(`<span><i class="fas fa-warehouse"></i> ${prop.areaBodega.toLocaleString('es-CL')} m² bod.</span>`);
+  if (prop.parking)   specs.push(`<span><i class="fas fa-car"></i> ${prop.parking} estac.</span>`);
+  if (prop.bathrooms) specs.push(`<span><i class="fas fa-bath"></i> ${prop.bathrooms} baños</span>`);
+  if (prop.portones)  specs.push(`<span><i class="fas fa-door-open"></i> ${prop.portones} portones</span>`);
+  if (prop.height)    specs.push(`<span><i class="fas fa-arrows-alt-v"></i> ${prop.height} m altura</span>`);
+  document.getElementById('pvPropSpecs').innerHTML = specs.join('');
+
+  // Thumbnails
+  const thumbsRow = document.getElementById('pvThumbsRow');
+  thumbsRow.innerHTML = _pvImages.map((src, i) =>
+    `<div class="pv-thumb${i === 0 ? ' active' : ''}" onclick="pvGoThumb(${i})">
+       <img src="${escapeAttr(src)}" alt="Foto ${i+1}" loading="lazy" onerror="imgFallback(this)">
+     </div>`
+  ).join('');
+
+  pvUpdateImg();
+
+  const overlay = document.getElementById('propertyVisor');
+  overlay.style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+
+  // Touch swipe
+  const stage = document.getElementById('pvImgWrap');
+  stage.addEventListener('touchstart', _pvTouchStart, { passive: true });
+  stage.addEventListener('touchend',   _pvTouchEnd,   { passive: true });
+}
+
+function closePropertyVisor() {
+  const overlay = document.getElementById('propertyVisor');
+  overlay.style.display = 'none';
+  document.body.style.overflow = '';
+  _pvPropId = null;
+  const stage = document.getElementById('pvImgWrap');
+  stage.removeEventListener('touchstart', _pvTouchStart);
+  stage.removeEventListener('touchend',   _pvTouchEnd);
+}
+
+function pvUpdateImg() {
+  const img = document.getElementById('pvMainImg');
+  const count = document.getElementById('pvTopCount');
+  img.classList.add('pv-fading');
+  setTimeout(() => {
+    img.src = _pvImages[_pvIndex] || FALLBACK_IMG;
+    img.classList.remove('pv-fading');
+  }, 120);
+  count.textContent = `${_pvIndex + 1} / ${_pvImages.length}`;
+
+  // Update thumbs
+  document.querySelectorAll('.pv-thumb').forEach((el, i) => {
+    el.classList.toggle('active', i === _pvIndex);
+  });
+
+  // Nav visibility
+  document.getElementById('pvPrevBtn').classList.toggle('hidden', _pvIndex === 0);
+  document.getElementById('pvNextBtn').classList.toggle('hidden', _pvIndex === _pvImages.length - 1);
+
+  // Scroll active thumb into view
+  const activeThumb = document.querySelector('.pv-thumb.active');
+  if (activeThumb) activeThumb.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+}
+
+function pvNav(dir) {
+  const next = _pvIndex + dir;
+  if (next < 0 || next >= _pvImages.length) return;
+  _pvIndex = next;
+  pvUpdateImg();
+}
+
+function pvGoThumb(i) {
+  _pvIndex = i;
+  pvUpdateImg();
+}
+
+function pvGoDetail() {
+  closePropertyVisor();
+  if (_pvPropId !== null) showPage('detail', _pvPropId);
+}
+
+function _pvTouchStart(e) { _pvTouchStartX = e.touches[0].clientX; }
+function _pvTouchEnd(e) {
+  const dx = e.changedTouches[0].clientX - _pvTouchStartX;
+  if (Math.abs(dx) > 40) pvNav(dx < 0 ? 1 : -1);
+}
+
 // ===================== LIGHTBOX =====================
 let _lightboxImages = [];
 let _lightboxIndex = 0;
@@ -2100,6 +2238,15 @@ document.addEventListener('click', (e) => {
 
 // Close modal with ESC key
 document.addEventListener('keydown', (e) => {
+  // Visor de propiedades
+  const pv = document.getElementById('propertyVisor');
+  if (pv && pv.style.display !== 'none') {
+    if (e.key === 'Escape')      closePropertyVisor();
+    if (e.key === 'ArrowRight')  pvNav(1);
+    if (e.key === 'ArrowLeft')   pvNav(-1);
+    return;
+  }
+  // Lightbox de detalle
   const lb = document.getElementById('lightbox');
   if (lb && lb.style.display !== 'none') {
     if (e.key === 'Escape') closeLightbox();
