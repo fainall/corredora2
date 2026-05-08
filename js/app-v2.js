@@ -994,7 +994,9 @@ function renderDetail(propId) {
     'CircuitoCerrado': 'Circuito Cerrado (CCTV TV)',
     'CercoElectrico': 'Cerco Eléctrico Perimetral', 'RedHumeda': 'Red Húmeda',
     'Conserjeria': 'Conserjería',
-    'SensorHumo': 'Sensor de Humo'
+    'SensorHumo': 'Sensor de Humo',
+    'Guardias24h': 'Guardias 24/7',
+    'ControlAccesos': 'Control de Accesos'
   };
   const AMENITY_LABELS = {
     'Aire': 'Aire Acondicionado', 'Bascula': 'Báscula', 'Calefaccion': 'Calefacción',
