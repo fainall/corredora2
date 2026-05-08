@@ -594,7 +594,7 @@
                 </div>
                 <!-- Precio -->
                 <div class="form-group">
-                  <label id="fPriceLabel">Precio (UF/mes) *</label>
+                  <label id="fPriceLabel">Precio (UF) *</label>
                   <div class="price-input-wrap">
                     <select id="fPriceUnit" class="price-unit-select" onchange="updatePriceLabel(); updateUFConversion();">
                       <option value="UF">UF</option>
@@ -603,6 +603,7 @@
                     <input type="text" id="fPrice" required placeholder="Ej: 120,5" oninput="updateUFConversion()" inputmode="decimal">
                   </div>
                   <div class="uf-conversion-hint" id="ufConversionHint"></div>
+                  <label class="iva-toggle"><input type="checkbox" id="fPriceIva" checked> <span>El precio es <strong>+IVA</strong></span></label>
                 </div>
                 <!-- Gastos Comunes -->
                 <div class="form-group">
@@ -615,6 +616,7 @@
                     <input type="text" id="fGastos" placeholder="Ej: 15" oninput="updateGastosConversion()" inputmode="decimal">
                   </div>
                   <div class="uf-conversion-hint" id="gastosConversionHint"></div>
+                  <label class="iva-toggle"><input type="checkbox" id="fGastosIva"> <span>Gastos comunes <strong>+IVA</strong></span></label>
                 </div>
                 <div class="form-group">
                   <label>Ubicacion *</label>

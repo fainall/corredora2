@@ -21,8 +21,10 @@ function propFromDb(r) {
     status: r.status,
     price: Number(r.price),
     priceUnit: r.price_unit || (r.status === 'Arriendo' ? 'UF' : 'CLP'),
+    priceWithIva: r.price_with_iva !== false, // default true
     gastosComunes: r.gastos_comunes != null ? Number(r.gastos_comunes) : null,
     gastosComunesUnit: r.gastos_comunes_unit || 'UF',
+    gastosComunesWithIva: r.gastos_comunes_with_iva === true, // default false
     location: r.location,
     address: r.address,
     area: r.area != null ? Number(r.area) : null,
@@ -62,8 +64,10 @@ function propToDb(p) {
     status: p.status,
     price: p.price,
     price_unit: p.priceUnit || 'CLP',
+    price_with_iva: p.priceWithIva !== false,
     gastos_comunes: p.gastosComunes || null,
     gastos_comunes_unit: p.gastosComunesUnit || 'UF',
+    gastos_comunes_with_iva: p.gastosComunesWithIva === true,
     location: p.location,
     address: p.address,
     area: p.area,

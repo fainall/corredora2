@@ -813,12 +813,11 @@ function closeMenu() {
 // ===================== RENDER PROPERTY CARD =====================
 function formatPrice(prop) {
   const unit = prop.priceUnit || 'UF';
-  const suffix = prop.status === 'Arriendo' ? '/mes' : '';
-  const ivaTag = ' <span class="iva-tag">+IVA</span>';
+  const ivaTag = (prop.priceWithIva !== false) ? ' <span class="iva-tag">+IVA</span>' : '';
   if (unit === 'UF') {
-    return `UF ${formatUF(prop.price)}${suffix}${ivaTag}`;
+    return `UF ${formatUF(prop.price)}${ivaTag}`;
   }
-  return `$${(prop.price || 0).toLocaleString('es-CL')}${suffix}${ivaTag}`;
+  return `$ ${(prop.price || 0).toLocaleString('es-CL')}${ivaTag}`;
 }
 
 function createPropertyCard(prop) {
@@ -1055,13 +1054,13 @@ function renderDetail(propId) {
           <div class="detail-main">
             <div class="detail-price-row">
               <div class="detail-price-tag">
-                <div class="dpt-main">${priceText} <span class="iva-tag">+IVA</span></div>
+                <div class="dpt-main">${priceText}${prop.priceWithIva !== false ? ' <span class="iva-tag">+IVA</span>' : ''}</div>
                 ${priceSubText ? `<div class="dpt-sub">${priceSubText}</div>` : ''}
               </div>
               ${(() => { const g = buildGastosText(prop); return g ? `
                 <div class="detail-price-tag detail-gastos-tag">
                   <div class="dpt-label">Gastos comunes</div>
-                  <div class="dpt-main">${g.main}</div>
+                  <div class="dpt-main">${g.main}${prop.gastosComunesWithIva ? ' <span class="iva-tag">+IVA</span>' : ''}</div>
                   ${g.sub ? `<div class="dpt-sub">${g.sub}</div>` : ''}
                 </div>` : ''; })()}
             </div>
@@ -1619,8 +1618,10 @@ function saveProperty(e) {
     status: document.getElementById('fStatus').value,
     price: parseDecimalInput(document.getElementById('fPrice').value),
     priceUnit: document.getElementById('fPriceUnit')?.value || 'UF',
+    priceWithIva: document.getElementById('fPriceIva')?.checked !== false,
     gastosComunes: parseDecimalInput(document.getElementById('fGastos')?.value) || null,
     gastosComunesUnit: document.getElementById('fGastosUnit')?.value || 'UF',
+    gastosComunesWithIva: document.getElementById('fGastosIva')?.checked === true,
     location: document.getElementById('fLocation').value.trim(),
     address: document.getElementById('fAddress').value.trim(),
     area: parseDecimalInput(document.getElementById('fArea').value) || 0,
@@ -1712,9 +1713,11 @@ function editProperty(id) {
   // Precio con soporte UF/CLP y coma
   if (document.getElementById('fPriceUnit')) document.getElementById('fPriceUnit').value = prop.priceUnit || 'UF';
   document.getElementById('fPrice').value = prop.price != null ? String(prop.price).replace('.', ',') : '';
+  if (document.getElementById('fPriceIva')) document.getElementById('fPriceIva').checked = prop.priceWithIva !== false;
   // Gastos comunes
   if (document.getElementById('fGastosUnit')) document.getElementById('fGastosUnit').value = prop.gastosComunesUnit || 'UF';
   if (document.getElementById('fGastos')) document.getElementById('fGastos').value = prop.gastosComunes != null ? String(prop.gastosComunes).replace('.', ',') : '';
+  if (document.getElementById('fGastosIva')) document.getElementById('fGastosIva').checked = prop.gastosComunesWithIva === true;
   document.getElementById('fLocation').value = prop.location || '';
   document.getElementById('fAddress').value = prop.address || '';
   // m² con coma
@@ -1763,6 +1766,11 @@ function resetForm() {
   document.getElementById('editId').value = '';
   document.getElementById('formSubmitBtn').innerHTML = '<i class="fas fa-plus-circle"></i> Publicar';
   form.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+  // Defaults para checkboxes de IVA: precio con IVA por defecto, gastos sin IVA
+  const fPriceIva = document.getElementById('fPriceIva');
+  if (fPriceIva) fPriceIva.checked = true;
+  const fGastosIva = document.getElementById('fGastosIva');
+  if (fGastosIva) fGastosIva.checked = false;
   resetImageUploaders();
   // Limpiar hints de conversión
   const h1 = document.getElementById('ufConversionHint');
@@ -1991,12 +1999,12 @@ function openPropertyVisor(id, startIndex = 0) {
 
   // Precio
   let priceHtml;
-  const ivaInline = ' <span class="iva-tag">+IVA</span>';
+  const ivaInline = (prop.priceWithIva !== false) ? ' <span class="iva-tag">+IVA</span>' : '';
   if (prop.priceUnit === 'UF') {
     const clpEst = _ufValue ? `$ ${Math.round(prop.price * _ufValue).toLocaleString('es-CL')}` : '';
-    priceHtml = `UF ${formatUF(prop.price)}${prop.status === 'Arriendo' ? '/mes' : ''}${ivaInline}<br><small style="font-size:12px;opacity:.7">${clpEst}</small>`;
+    priceHtml = `UF ${formatUF(prop.price)}${ivaInline}<br><small style="font-size:12px;opacity:.7">${clpEst}</small>`;
   } else {
-    priceHtml = `$${(prop.price || 0).toLocaleString('es-CL')}${prop.status === 'Arriendo' ? '/mes' : ''}${ivaInline}`;
+    priceHtml = `$ ${(prop.price || 0).toLocaleString('es-CL')}${ivaInline}`;
   }
   document.getElementById('pvPropPrice').innerHTML = priceHtml;
 
@@ -2319,14 +2327,13 @@ function formatCLPCompact(clp) {
 function buildPriceText(prop) {
   const isRent = prop.status === 'Arriendo';
   const unit = prop.priceUnit || (isRent ? 'UF' : 'CLP');
-  const suffix = isRent ? '/mes' : '';
   if (unit === 'UF') {
     const ufStr = formatUF(prop.price);
     const clp = ufToCLP(prop.price);
     const clpStr = clp ? `$ ${clp.toLocaleString('es-CL')}` : '';
-    return { main: `UF ${ufStr}${suffix}`, sub: clpStr };
+    return { main: `UF ${ufStr}`, sub: clpStr };
   }
-  return { main: `$ ${prop.price.toLocaleString('es-CL')}${suffix}`, sub: '' };
+  return { main: `$ ${prop.price.toLocaleString('es-CL')}`, sub: '' };
 }
 
 function buildGastosText(prop) {
@@ -2387,12 +2394,10 @@ function calcSuperficieTotal() {
 }
 
 function updatePriceLabel() {
-  const status = document.getElementById('fStatus')?.value;
   const unit = document.getElementById('fPriceUnit')?.value || 'UF';
   const label = document.getElementById('fPriceLabel');
   if (!label) return;
-  const suffix = status === 'Arriendo' ? '/mes' : '';
-  label.textContent = `Precio (${unit}${suffix}) *`;
+  label.textContent = `Precio (${unit}) *`;
 }
 
 function getVideoEmbedUrl(url) {
