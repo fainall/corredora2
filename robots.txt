@@ -1,0 +1,14 @@
+# GPRB - Gestion Inmobiliaria Industrial
+# https://gprb.cl
+
+User-agent: *
+Allow: /
+Disallow: /mail.php
+Disallow: /ping.php
+Disallow: /test.php
+Disallow: /.git/
+Disallow: /.env
+Disallow: /cgi-bin/
+
+# Sitemap
+Sitemap: https://gprb.cl/sitemap.xml

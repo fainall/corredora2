@@ -1155,11 +1155,14 @@ function renderDetail(propId) {
           <div class="detail-sidebar">
             <div class="sidebar-card">
               <h3>Consultar</h3>
-              <form class="contact-form" onsubmit="handleContact(event)">
-                <input type="text" placeholder="Tu nombre" required>
-                <input type="email" placeholder="Tu email" required>
-                <input type="tel" value="+56 " placeholder="Tu teléfono">
-                <textarea rows="4" placeholder="Consulta sobre: ${escapeAttr(prop.title)}..."></textarea>
+              <form class="contact-form" onsubmit="handleContact(event)"
+                    data-property-title="${escapeAttr(prop.title || '')}"
+                    data-property-url="${escapeAttr('https://gprb.cl/#propiedad/' + prop.id)}">
+                <input type="text" name="name" placeholder="Tu nombre" required>
+                <input type="email" name="email" placeholder="Tu email" required>
+                <input type="tel" name="phone" value="+56 " placeholder="Tu teléfono">
+                <textarea name="message" rows="4" placeholder="Consulta sobre: ${escapeAttr(prop.title)}..." required></textarea>
+                <input type="text" name="website" tabindex="-1" autocomplete="off" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0" aria-hidden="true">
                 <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;">
                   <i class="fas fa-paper-plane"></i> Enviar Consulta
                 </button>
@@ -1925,31 +1928,84 @@ async function handleContact(e) {
   e.preventDefault();
   const form = e.target;
   const fd = new FormData(form);
-  // Intenta obtener campos tanto por name como por id
+  // Helper: obtener valor por name, id, o tipo de input
   const get = (k, altId) => {
     const v = fd.get(k);
     if (v != null && String(v).trim() !== '') return String(v).trim();
     const el = altId ? document.getElementById(altId) : null;
     return el ? el.value.trim() : '';
   };
-  const msg = {
-    name: get('name', 'ccName') || get('cName'),
-    email: get('email', 'ccEmail') || get('cEmail'),
-    phone: get('phone', 'ccPhone') || get('cPhone'),
-    category: get('category', 'ccCategory'),
-    operation: get('operation', 'ccOperation'),
-    message: get('message', 'ccMessage') || get('cMessage')
-  };
-  if (!msg.name || !msg.email) {
-    showToast('Completa nombre y email');
+  // Fallback: leer inputs por orden si no tienen name/id
+  const inputs = form.querySelectorAll('input, textarea, select');
+  const byOrder = (i) => inputs[i] ? inputs[i].value.trim() : '';
+
+  const name    = get('name', 'ccName') || get('cName') || byOrder(0);
+  const email   = get('email', 'ccEmail') || get('cEmail') || byOrder(1);
+  const phone   = get('phone', 'ccPhone') || get('cPhone') || byOrder(2);
+  const message = get('message', 'ccMessage') || get('cMessage') || byOrder(3);
+  const category = get('category', 'ccCategory');
+  const operation = get('operation', 'ccOperation');
+  // Detectar si es del detalle de propiedad (sidebar)
+  const propTitle = form.dataset?.propertyTitle || '';
+  const propUrl = form.dataset?.propertyUrl || '';
+
+  if (!name || !email || !message) {
+    showToast('Completa nombre, email y mensaje');
     return;
   }
+
+  // Disable submit button mientras envía
+  const submitBtn = form.querySelector('button[type="submit"]');
+  const originalBtnHtml = submitBtn ? submitBtn.innerHTML : '';
+  if (submitBtn) {
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
+  }
+
+  // Enviar a ambos: DB (Supabase) + Email (PHP) en paralelo
+  const dbPayload = { name, email, phone, category, operation, message };
+  const mailPayload = {
+    name, email, phone, message,
+    subject: category || (propTitle ? 'Consulta propiedad' : 'Contacto general'),
+    property: propTitle,
+    url: propUrl || window.location.href,
+    website: '' // honeypot vacío
+  };
+
+  let dbOk = false, mailOk = false, lastErr = '';
   try {
-    await window.GPRB_SB.sendContactMessage(msg);
+    await window.GPRB_SB.sendContactMessage(dbPayload);
+    dbOk = true;
+  } catch (err) {
+    console.warn('contact DB save failed', err);
+    lastErr = err.message || 'DB error';
+  }
+  try {
+    const r = await fetch('/mail.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(mailPayload)
+    });
+    const data = await r.json().catch(() => ({}));
+    if (r.ok && data.ok) mailOk = true;
+    else lastErr = data.error || `HTTP ${r.status}`;
+  } catch (err) {
+    console.warn('contact mail failed', err);
+    lastErr = err.message || 'Mail error';
+  }
+
+  if (submitBtn) {
+    submitBtn.disabled = false;
+    submitBtn.innerHTML = originalBtnHtml;
+  }
+
+  if (mailOk || dbOk) {
     showToast('Mensaje enviado correctamente. Te contactaremos pronto.');
     form.reset();
-  } catch (err) {
-    showToast('Error al enviar: ' + (err.message || 'intenta de nuevo'));
+    // Restaurar el +56 default
+    form.querySelectorAll('input[type="tel"]').forEach(el => { el.value = '+56 '; });
+  } else {
+    showToast('Error al enviar: ' + (lastErr || 'intenta de nuevo'));
   }
 }
 
