@@ -289,8 +289,9 @@ const defaultSlider = {
   ]
 };
 
-// ===== In-memory caches (hidratados desde Supabase en init) =====
-let _propertiesCache = [...defaultProperties];
+// ===== In-memory caches (hidratados desde el backend en init) =====
+// DB es la única fuente de verdad. defaultProperties solo existe como referencia legacy.
+let _propertiesCache = [];
 let _sliderCache = JSON.parse(JSON.stringify(defaultSlider));
 
 function getProperties() {
@@ -301,19 +302,16 @@ function getSliderData() {
   return _sliderCache;
 }
 
-// Loaders async: llaman a Supabase y actualizan el cache + re-render
+// Loader: trae propiedades desde MySQL — DB es la única fuente de verdad
 async function loadPropertiesFromSB() {
   if (!window.GPRB_SB) return;
   try {
     const rows = await window.GPRB_SB.getProperties();
-    if (rows && rows.length > 0) {
-      // Defaults take priority for their own IDs;
-      // SB contributes only entries with IDs not covered by defaults.
-      const defaultIds = new Set(defaultProperties.map(p => p.id));
-      const sbExtras = rows.filter(r => !defaultIds.has(r.id));
-      _propertiesCache = [...defaultProperties, ...sbExtras];
-    }
-  } catch (e) { console.warn('loadPropertiesFromSB', e); }
+    _propertiesCache = Array.isArray(rows) ? rows : [];
+  } catch (e) {
+    console.warn('loadPropertiesFromSB', e);
+    _propertiesCache = [];
+  }
 }
 
 async function loadSliderFromSB() {
@@ -1082,8 +1080,8 @@ function renderDetail(propId) {
               <h2>Ficha Técnica</h2>
               <div class="specs-grid">
                 ${prop.type ? `<div class="spec-row"><span class="spec-label"><i class="fas fa-tag"></i> Tipo:</span><span class="spec-val">${escapeHtml(prop.type)}</span></div>` : ''}
-                ${prop.cumbrera > 0 ? `<div class="spec-row"><span class="spec-label"><i class="fas fa-drafting-compass"></i> Altura cumbrera:</span><span class="spec-val">${prop.cumbrera} m.t.</span></div>` : ''}
                 ${prop.height > 0 ? `<div class="spec-row"><span class="spec-label"><i class="fas fa-arrows-alt-v"></i> Altura al hombro:</span><span class="spec-val">${prop.height} m.t.</span></div>` : ''}
+                ${prop.cumbrera > 0 ? `<div class="spec-row"><span class="spec-label"><i class="fas fa-drafting-compass"></i> Altura cumbrera:</span><span class="spec-val">${prop.cumbrera} m.t.</span></div>` : ''}
                 ${prop.floorSupport > 0 ? `<div class="spec-row"><span class="spec-label"><i class="fas fa-layer-group"></i> Soporte piso:</span><span class="spec-val">${prop.floorSupport} t/m²</span></div>` : ''}
                 ${prop.age > 0 ? `<div class="spec-row"><span class="spec-label"><i class="fas fa-calendar"></i> Antigüedad:</span><span class="spec-val">${prop.age} año${prop.age !== 1 ? 's' : ''}</span></div>` : ''}
                 ${prop.privateRooms > 0 ? `<div class="spec-row"><span class="spec-label"><i class="fas fa-door-closed"></i> Privados:</span><span class="spec-val">${prop.privateRooms}</span></div>` : ''}
