@@ -372,7 +372,8 @@ function handle_login() {
         'email' => $row['email'],
         'name'  => $row['name'],
     ];
-    session_regenerate_id(true);
+    // NOTE: session_regenerate_id removed — causes session loss with samesite=Lax
+    // when the initial session cookie hasn't been confirmed by the browser yet.
     $_SESSION['user'] = $user;
     ok(['user' => $user]);
 }
