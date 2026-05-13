@@ -76,7 +76,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'OPTIONS') {
 session_set_cookie_params([
     'lifetime' => 86400 * 30, // 30 days
     'path'     => '/',
-    'domain'   => '.gprb.cl', // share between gprb.cl and www.gprb.cl
+    'domain'   => 'gprb.cl', // share between gprb.cl and www.gprb.cl (no leading dot)
     'secure'   => true,
     'httponly' => true,
     'samesite' => 'Lax',
