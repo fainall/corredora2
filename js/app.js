@@ -1960,36 +1960,25 @@ async function handleContact(e) {
     submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
   }
 
-  // Enviar a ambos: DB (Supabase) + Email (PHP) en paralelo
-  const dbPayload = { name, email, phone, category, operation, message };
-  const mailPayload = {
-    name, email, phone, message,
-    subject: category || (propTitle ? 'Consulta propiedad' : 'Contacto general'),
-    property: propTitle,
-    url: propUrl || window.location.href,
-    website: '' // honeypot vacío
+  // Send to /api.php?action=save_contact — guarda en DB + envía email automáticamente
+  // Incluye property+url para que el destinatario sepa de cuál propiedad consulta
+  const payload = {
+    name, email, phone,
+    category,
+    operation,
+    property: propTitle,                       // Título de la propiedad (si aplica)
+    url: propUrl || window.location.href,      // URL del aviso
+    message,
+    website: '' // honeypot
   };
 
-  let dbOk = false, mailOk = false, lastErr = '';
+  let ok = false, lastErr = '';
   try {
-    await window.GPRB_SB.sendContactMessage(dbPayload);
-    dbOk = true;
+    await window.GPRB_SB.sendContactMessage(payload);
+    ok = true;
   } catch (err) {
-    console.warn('contact DB save failed', err);
-    lastErr = err.message || 'DB error';
-  }
-  try {
-    const r = await fetch('/mail.php', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(mailPayload)
-    });
-    const data = await r.json().catch(() => ({}));
-    if (r.ok && data.ok) mailOk = true;
-    else lastErr = data.error || `HTTP ${r.status}`;
-  } catch (err) {
-    console.warn('contact mail failed', err);
-    lastErr = err.message || 'Mail error';
+    console.warn('contact save failed', err);
+    lastErr = err.message || 'Error al enviar';
   }
 
   if (submitBtn) {
@@ -1997,7 +1986,7 @@ async function handleContact(e) {
     submitBtn.innerHTML = originalBtnHtml;
   }
 
-  if (mailOk || dbOk) {
+  if (ok) {
     showToast('Mensaje enviado correctamente. Te contactaremos pronto.');
     form.reset();
     // Restaurar el +56 default
