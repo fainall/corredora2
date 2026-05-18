@@ -37,6 +37,12 @@ body {
   background: var(--bg);
   line-height: 1.6;
   overflow-x: hidden;
+  /* Prevent scroll chaining to body when modals/menus are open */
+  overscroll-behavior-y: contain;
+}
+html {
+  overflow-x: hidden; /* belt-and-suspenders: stop ANY element from causing horizontal scroll */
+  -webkit-text-size-adjust: 100%; /* prevent iOS from resizing text on orientation change */
 }
 
 a { text-decoration: none; color: inherit; }
@@ -2789,8 +2795,10 @@ body.light-mode .iva-toggle { color: #1a1a1a !important; }
   .mobile-nav {
     top: 64px;
     height: calc(100vh - 64px);
+    height: calc(100dvh - 64px); /* iOS Safari: dynamic viewport prevents URL bar from cutting menu */
     padding: 20px 0;
     overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
     -webkit-overflow-scrolling: touch;
   }
   .mobile-nav a {
@@ -3175,8 +3183,9 @@ body { overscroll-behavior-y: contain; }
 }
 @media (max-width: 480px) {
   .float-btn { width: 48px; height: 48px; font-size: 1.25rem; right: 16px; }
-  .float-whatsapp { bottom: 16px; }
-  .float-top { bottom: 76px; }
+  /* iOS Safari: respect safe area so buttons don't sit under home indicator / URL bar */
+  .float-whatsapp { bottom: calc(16px + env(safe-area-inset-bottom, 0px)); }
+  .float-top      { bottom: calc(76px + env(safe-area-inset-bottom, 0px)); }
 }
 
 /* ===================== FAVORITES ===================== */
@@ -4330,7 +4339,7 @@ body.light-mode .section-testimonials { background: #111f30; }
   .header { height: 56px; }
   .header-inner { height: 56px; gap: 8px; }
   .logo-img { height: 50px; max-width: 180px; }
-  .mobile-nav { top: 56px; height: calc(100vh - 56px); }
+  .mobile-nav { top: 56px; height: calc(100vh - 56px); height: calc(100dvh - 56px); }
   .header-icons { gap: 4px; }
   .header-icon-btn { width: 36px; height: 36px; font-size: 0.95rem; }
 }
@@ -5150,10 +5159,13 @@ body.light-mode .spec-val { color: var(--dark); }
 }
 
 .pv-container {
-  width: 100%; max-width: 1120px; height: 100vh;
-  max-height: 100vh;
+  width: 100%; max-width: 1120px;
+  height: 100vh; max-height: 100vh;
+  /* iOS Safari: use dynamic viewport so the close button isn't hidden behind the URL bar */
+  height: 100dvh; max-height: 100dvh;
   display: flex; flex-direction: column;
   position: relative;
+  overscroll-behavior: contain;
 }
 
 /* ── Top bar ── */
