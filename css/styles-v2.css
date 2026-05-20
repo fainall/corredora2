@@ -36,12 +36,14 @@ body {
   color: var(--text);
   background: var(--bg);
   line-height: 1.6;
-  overflow-x: hidden;
-  /* Prevent scroll chaining to body when modals/menus are open */
-  overscroll-behavior-y: contain;
+  /* overflow-x: clip stops horizontal scroll WITHOUT creating a scroll container
+     (overflow-x: hidden would force overflow-y: auto = janky double-scroll on Android) */
+  overflow-x: hidden; /* fallback for very old browsers */
+  overflow-x: clip;
 }
 html {
-  overflow-x: hidden; /* belt-and-suspenders: stop ANY element from causing horizontal scroll */
+  overflow-x: hidden; /* fallback */
+  overflow-x: clip;
   -webkit-text-size-adjust: 100%; /* prevent iOS from resizing text on orientation change */
 }
 
