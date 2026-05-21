@@ -271,7 +271,7 @@ const defaultSlider = {
     {
       bgUrl: 'https://images.unsplash.com/photo-1565793298595-6a879b1d9492?w=1600&q=85',
       tag: 'Bienvenido a GPRB',
-      title: 'Gestión Inmobiliaria Industrial',
+      title: 'Bodegas y Terrenos Industriales',
       subtitle: 'Las mejores soluciones en propiedades industriales de Chile'
     },
     {
