@@ -42,14 +42,12 @@ body {
   color: var(--text);
   background: var(--bg);
   line-height: 1.6;
-  /* Clip horizontal overflow on body only. On old browsers (no `clip` support)
-     this falls back to `hidden`, which is safe because html has NO overflow set,
-     so html remains the sole scroller — no double-container jank. */
-  overflow-x: hidden;
-}
-/* Modern browsers: `clip` avoids creating a scroll container entirely (best behavior). */
-@supports (overflow: clip) {
-  body { overflow-x: clip; }
+  /* NO overflow set on body or html: pure native document scroll.
+     This is the most compatible config — some Android/Chromium browsers have
+     buggy `overflow: clip`/`hidden` implementations that break vertical touch
+     scrolling. Horizontal overflow is contained at the section level instead
+     (each section already has `overflow: hidden`). */
+  max-width: 100%;
 }
 
 a { text-decoration: none; color: inherit; }
