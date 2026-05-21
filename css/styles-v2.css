@@ -29,22 +29,27 @@
   --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-html { scroll-behavior: smooth; }
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%; /* prevent iOS from resizing text on orientation change */
+  /* NO overflow-x on html: keep it the single natural scroller on ALL browsers.
+     Adding overflow-x:hidden here would make html overflow-y:auto = double scroll
+     container = broken/janky scroll on Android & Samsung Internet. */
+}
 
 body {
   font-family: 'Nunito', sans-serif;
   color: var(--text);
   background: var(--bg);
   line-height: 1.6;
-  /* overflow-x: clip stops horizontal scroll WITHOUT creating a scroll container
-     (overflow-x: hidden would force overflow-y: auto = janky double-scroll on Android) */
-  overflow-x: hidden; /* fallback for very old browsers */
-  overflow-x: clip;
+  /* Clip horizontal overflow on body only. On old browsers (no `clip` support)
+     this falls back to `hidden`, which is safe because html has NO overflow set,
+     so html remains the sole scroller — no double-container jank. */
+  overflow-x: hidden;
 }
-html {
-  overflow-x: hidden; /* fallback */
-  overflow-x: clip;
-  -webkit-text-size-adjust: 100%; /* prevent iOS from resizing text on orientation change */
+/* Modern browsers: `clip` avoids creating a scroll container entirely (best behavior). */
+@supports (overflow: clip) {
+  body { overflow-x: clip; }
 }
 
 a { text-decoration: none; color: inherit; }
