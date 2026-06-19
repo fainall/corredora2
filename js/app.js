@@ -322,6 +322,104 @@ async function loadSliderFromSB() {
   } catch (e) { console.warn('loadSliderFromSB', e); }
 }
 
+// ===================== CATEGORÍAS (dinámicas) =====================
+// Fallback si la DB aún no responde — coincide con el seed de api.php
+const DEFAULT_CATEGORIES = [
+  { id: 0, name: 'Bodega' }, { id: 0, name: 'Maxibodega' }, { id: 0, name: 'Galpon' },
+  { id: 0, name: 'Oficina' }, { id: 0, name: 'Industrial' }, { id: 0, name: 'Local Comercial' },
+  { id: 0, name: 'Terreno' }, { id: 0, name: 'Parcela' }
+];
+let _categoriesCache = [...DEFAULT_CATEGORIES];
+
+async function loadCategories() {
+  if (!window.GPRB_SB || !window.GPRB_SB.getCategories) return;
+  try {
+    const rows = await window.GPRB_SB.getCategories();
+    if (Array.isArray(rows) && rows.length > 0) _categoriesCache = rows;
+    populateCategoryDropdowns();
+  } catch (e) { console.warn('loadCategories', e); }
+}
+
+// Rellena los <select> de categoría preservando la 1ª opción (placeholder/Todas)
+// y el valor seleccionado actual.
+function populateCategoryDropdowns() {
+  const ids = ['fType', 'heroType', 'filterType'];
+  ids.forEach(id => {
+    const sel = document.getElementById(id);
+    if (!sel) return;
+    const prev = sel.value;
+    const firstOpt = sel.options[0] ? sel.options[0].outerHTML : '';
+    const opts = _categoriesCache.map(c =>
+      `<option value="${escapeAttr(c.name)}">${escapeHtml(c.name)}</option>`
+    ).join('');
+    sel.innerHTML = firstOpt + opts;
+    // Restaurar selección previa si sigue existiendo
+    if (prev && _categoriesCache.some(c => c.name === prev)) sel.value = prev;
+  });
+}
+
+// ── Modal de gestión de categorías ──
+function openCategoryManager() {
+  const modal = document.getElementById('categoryModal');
+  if (!modal) return;
+  renderCategoryList();
+  modal.style.display = 'flex';
+  const input = document.getElementById('catNewName');
+  if (input) { input.value = ''; setTimeout(() => input.focus(), 50); }
+}
+
+function closeCategoryManager() {
+  const modal = document.getElementById('categoryModal');
+  if (modal) modal.style.display = 'none';
+}
+
+function renderCategoryList() {
+  const ul = document.getElementById('catList');
+  if (!ul) return;
+  if (!_categoriesCache.length) {
+    ul.innerHTML = '<li class="cat-list-empty">No hay categorías aún.</li>';
+    return;
+  }
+  ul.innerHTML = _categoriesCache.map(c => `
+    <li>
+      <span>${escapeHtml(c.name)}</span>
+      ${c.id ? `<button class="cat-del-btn" onclick="deleteCategoryById(${c.id})" title="Eliminar"><i class="fas fa-trash"></i></button>` : ''}
+    </li>
+  `).join('');
+}
+
+async function addCategory() {
+  const input = document.getElementById('catNewName');
+  if (!input) return;
+  const name = input.value.trim();
+  if (!name) { showToast('Escribe un nombre de categoría'); return; }
+  if (!window.GPRB_SB || !window.GPRB_SB.createCategory) { showToast('Backend no disponible'); return; }
+  try {
+    await window.GPRB_SB.createCategory(name);
+    input.value = '';
+    await loadCategories();   // refresca cache + dropdowns
+    renderCategoryList();
+    showToast('Categoría agregada');
+  } catch (e) {
+    showToast('Error: ' + (e.message || 'no se pudo agregar'));
+  }
+}
+
+async function deleteCategoryById(id) {
+  const cat = _categoriesCache.find(c => c.id === id);
+  const name = cat ? cat.name : 'esta categoría';
+  if (!confirm(`¿Eliminar la categoría "${name}"?\n\nLas propiedades que ya la usan no se modifican.`)) return;
+  if (!window.GPRB_SB || !window.GPRB_SB.deleteCategory) return;
+  try {
+    await window.GPRB_SB.deleteCategory(id);
+    await loadCategories();
+    renderCategoryList();
+    showToast('Categoría eliminada');
+  } catch (e) {
+    showToast('Error: ' + (e.message || 'no se pudo eliminar'));
+  }
+}
+
 // ===================== FAVORITES =====================
 function getFavorites() {
   try { return JSON.parse(localStorage.getItem(FAVS_KEY) || '[]'); }
@@ -2536,7 +2634,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // 3. Cargar datos reales desde Supabase y re-renderizar
   if (window.GPRB_SB) {
-    await Promise.all([loadPropertiesFromSB(), loadSliderFromSB()]);
+    await Promise.all([loadPropertiesFromSB(), loadSliderFromSB(), loadCategories()]);
     renderSlider();
     if (currentPage === 'home') renderHome();
     if (currentPage === 'listings') renderListings();

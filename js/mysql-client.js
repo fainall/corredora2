@@ -318,6 +318,25 @@ async function sbDeleteImageByUrl(url) {
   }
 }
 
+// ── CATEGORIES ──────────────────────────────────────────────
+async function sbGetCategories() {
+  try {
+    const data = await apiGet('categories');
+    return Array.isArray(data) ? data : [];
+  } catch (e) {
+    console.error('sbGetCategories', e);
+    return [];
+  }
+}
+
+async function sbCreateCategory(name) {
+  return await apiPost('save_category', { name });
+}
+
+async function sbDeleteCategory(id) {
+  return await apiPost('delete_category', { id });
+}
+
 // ── INIT: restore auth from localStorage on load ────────────
 _loadAuth();
 
@@ -343,4 +362,7 @@ window.GPRB_SB = {
   uploadImage:        sbUploadImage,
   uploadImages:       sbUploadImages,
   deleteImageByUrl:   sbDeleteImageByUrl,
+  getCategories:      sbGetCategories,
+  createCategory:     sbCreateCategory,
+  deleteCategory:     sbDeleteCategory,
 };

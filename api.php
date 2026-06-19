@@ -339,6 +339,9 @@ try {
         case 'contacts':           handle_contacts();           break;
         case 'slides':             handle_slides();             break;
         case 'save_slides':        handle_save_slides();        break;
+        case 'categories':         handle_categories();         break;
+        case 'save_category':      handle_save_category();      break;
+        case 'delete_category':    handle_delete_category();    break;
         default: fail('Acción desconocida: ' . $action, 404);
     }
 } catch (Throwable $e) {
@@ -742,4 +745,67 @@ function handle_save_slides() {
          ORDER BY sort_order ASC, id ASC'
     );
     ok(array_map('slide_from_db', $rows));
+}
+
+// ════════════════════════════════════════════════════════════
+//   CATEGORIES (categorías de propiedades, gestionables)
+// ════════════════════════════════════════════════════════════
+function ensure_categories_table(mysqli $db): void {
+    $db->query("CREATE TABLE IF NOT EXISTS categories (
+        id INT(11) AUTO_INCREMENT PRIMARY KEY,
+        name VARCHAR(100) NOT NULL UNIQUE,
+        sort_order INT(11) DEFAULT 0,
+        active TINYINT(1) DEFAULT 1,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+
+    $row = db_query_one($db, "SELECT COUNT(*) AS c FROM categories");
+    if ((int)($row['c'] ?? 0) === 0) {
+        $defaults = ['Bodega','Maxibodega','Galpon','Oficina','Industrial','Local Comercial','Terreno','Parcela'];
+        $stmt = $db->prepare("INSERT INTO categories (name, sort_order) VALUES (?, ?)");
+        $i = 1;
+        foreach ($defaults as $name) { $stmt->bind_param('si', $name, $i); $stmt->execute(); $i++; }
+        $stmt->close();
+    }
+}
+
+function handle_categories(): void {
+    $db = db();
+    ensure_categories_table($db);
+    $rows = db_query_all($db, "SELECT id, name, sort_order FROM categories WHERE active = 1 ORDER BY sort_order ASC, name ASC");
+    ok(array_map(function ($r) {
+        return ['id' => (int)$r['id'], 'name' => $r['name'], 'sortOrder' => (int)$r['sort_order']];
+    }, $rows));
+}
+
+function handle_save_category(): void {
+    require_auth();
+    $db = db();
+    ensure_categories_table($db);
+    $b = read_json_body();
+    $name = trim((string)($b['name'] ?? ''));
+    if ($name === '') fail('Nombre requerido', 400);
+    if (mb_strlen($name) > 100) fail('Nombre demasiado largo', 400);
+
+    // Si ya existe (case-insensitive), devolver el existente
+    $existing = db_query_one($db, "SELECT id, name FROM categories WHERE LOWER(name) = LOWER(?) LIMIT 1", [$name], 's');
+    if ($existing) { ok(['id' => (int)$existing['id'], 'name' => $existing['name']]); }
+
+    $ord = db_query_one($db, "SELECT COALESCE(MAX(sort_order), 0) + 1 AS n FROM categories");
+    $sort = (int)($ord['n'] ?? 1);
+    $id = db_execute($db, "INSERT INTO categories (name, sort_order) VALUES (?, ?)", [$name, $sort], 'si');
+    ok(['id' => $id, 'name' => $name]);
+}
+
+function handle_delete_category(): void {
+    require_auth();
+    $db = db();
+    ensure_categories_table($db);
+    $b = read_json_body();
+    $id = (int)($b['id'] ?? 0);
+    if ($id <= 0) fail('id requerido', 400);
+    // Nota: las propiedades guardan el tipo como texto, así que borrar la categoría
+    // no afecta las propiedades existentes — solo la quita del listado de opciones.
+    db_execute($db, "DELETE FROM categories WHERE id = ?", [$id], 'i');
+    ok(['ok' => true]);
 }
