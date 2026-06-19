@@ -29,7 +29,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="preconnect" href="https://images.unsplash.com">
-  <link rel="stylesheet" href="css/styles-v2.css?v=20260521e">
+  <link rel="stylesheet" href="css/styles-v2.css?v=20260521f">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
         integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA=="
         crossorigin="anonymous" referrerpolicy="no-referrer">
@@ -147,6 +147,7 @@
               <select id="heroType">
                 <option value="">Todas las categorías</option>
                 <option value="Bodega">Bodega</option>
+                <option value="Maxibodega">Maxibodega</option>
                 <option value="Industrial">Galpón Industrial</option>
                 <option value="Oficina">Oficina</option>
                 <option value="Terreno">Terreno</option>
@@ -307,6 +308,7 @@
                   <select name="category">
                     <option value="">Seleccionar...</option>
                     <option>Bodega</option>
+                    <option>Maxibodega</option>
                     <option>Oficina</option>
                     <option>Industrial</option>
                     <option>Terreno</option>
@@ -357,6 +359,7 @@
               <option value="Casa">Casa</option>
               <option value="Oficina">Oficina</option>
               <option value="Bodega">Bodega</option>
+              <option value="Maxibodega">Maxibodega</option>
               <option value="Industrial">Industrial</option>
               <option value="Local">Local</option>
               <option value="Parcela">Parcela</option>
@@ -587,6 +590,7 @@
                   <select id="fType" required>
                     <option value="">Seleccionar...</option>
                     <option value="Bodega">Bodega</option>
+                    <option value="Maxibodega">Maxibodega</option>
                     <option value="Galpon">Galpón</option>
                     <option value="Oficina">Oficina</option>
                     <option value="Industrial">Industrial</option>
@@ -949,6 +953,7 @@
         <div class="footer-col">
           <h4>Categorias</h4>
           <a href="#" onclick="filterByType('Bodega')">Bodegas</a>
+          <a href="#" onclick="filterByType('Maxibodega')">Maxibodegas</a>
           <a href="#" onclick="filterByType('Industrial')">Industriales</a>
           <a href="#" onclick="filterByType('Oficina')">Oficinas</a>
           <a href="#" onclick="filterByType('Terreno')">Terrenos</a>
@@ -968,6 +973,6 @@
   </footer>
 
   <script src="js/mysql-client.js"></script>
-  <script src="js/app-v2.js?v=20260521e"></script>
+  <script src="js/app-v2.js?v=20260521f"></script>
 </body>
 </html>

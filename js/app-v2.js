@@ -782,9 +782,18 @@ function handleHashRoute() {
     // El slug puede ser "2-galpon-industrial" — solo usamos el número inicial
     const id = parseInt(hash.slice('#propiedad/'.length), 10);
     if (!isNaN(id)) {
-      const prop = getProperties().find(p => p.id === id);
-      if (prop) showPage('detail', id);
-      else showPage('listings');
+      const props = getProperties();
+      const prop = props.find(p => p.id === id);
+      if (prop) {
+        showPage('detail', id);
+      } else if (props.length === 0) {
+        // Las propiedades aún no se cargan desde la DB (enlace directo recién abierto).
+        // Mantener la intención de "detalle"; se re-resuelve tras la carga en init().
+        showPage('detail', id);
+      } else {
+        // Propiedades cargadas pero el id no existe → mandar a listados
+        showPage('listings');
+      }
     }
   } else if (hash === '#dashboard') {
     showPage('dashboard');
@@ -2532,14 +2541,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (currentPage === 'home') renderHome();
     if (currentPage === 'listings') renderListings();
     if (currentPage === 'dashboard') renderDashboard();
-    // Si se llegó por URL directa a una propiedad, re-renderizar con datos reales
-    if (currentPage === 'detail') {
-      const hash = window.location.hash;
-      if (hash.startsWith('#propiedad/')) {
-        const id = parseInt(hash.slice('#propiedad/'.length), 10);
-        const prop = getProperties().find(p => p.id === id);
-        if (prop) renderDetailAsync(id);
-      }
+    // Re-resolver la URL ahora que las propiedades reales están cargadas.
+    // Clave para enlaces directos (Excel, WhatsApp, email): en el primer
+    // handleHashRoute() las props aún no existían, así que re-resolvemos aquí.
+    if (window.location.hash.startsWith('#propiedad/')) {
+      handleHashRoute();
     }
   }
 });
