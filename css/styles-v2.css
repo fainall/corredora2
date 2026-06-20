@@ -2634,7 +2634,17 @@ body.light-mode .iva-toggle { color: #1a1a1a !important; }
   vertical-align: middle;
   line-height: 1.2;
 }
-.card-price .iva-tag { background: rgba(255,255,255,0.28); }
+/* +IVA en tarjetas: pill sólido de marca para que resalte sobre la imagen */
+.card-price .iva-tag {
+  background: var(--secondary, #00c896);
+  color: #fff;
+  font-size: 0.6em;
+  padding: 3px 8px;
+  margin-left: 4px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+  text-shadow: none;
+  vertical-align: middle;
+}
 
 .detail-features { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 16px; margin-bottom: 32px; }
 .detail-feature { background: var(--bg-gray); border-radius: var(--radius-sm); padding: 16px; text-align: center; }
