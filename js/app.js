@@ -1127,8 +1127,9 @@ function renderDetail(propId) {
             <div class="detail-location-top"><i class="fas fa-map-marker-alt"></i> ${escapeHtml(prop.location)}</div>
           </div>
           <div class="detail-header-right">
-            <div class="detail-price-top">${priceText}</div>
+            <div class="detail-price-top">${priceText}${prop.priceWithIva !== false ? ' <span class="iva-tag">+IVA</span>' : ''}</div>
             ${priceSubText ? `<div class="detail-price-sub">${priceSubText}</div>` : ''}
+            ${prop.priceWithIva !== false ? `<div class="detail-price-iva-note">Valores no incluyen IVA</div>` : ''}
             <span class="detail-status-badge ${prop.status === 'Venta' ? 'sale' : 'rent'}">${statusLabel}</span>
           </div>
         </div>

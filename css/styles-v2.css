@@ -5113,6 +5113,13 @@ body.light-mode .spec-val { color: var(--dark); }
   color: #666;
   margin-top: 2px;
 }
+.detail-price-iva-note {
+  font-size: 0.72rem;
+  color: #8a96a3;
+  font-weight: 600;
+  margin-top: 3px;
+  letter-spacing: 0.2px;
+}
 .detail-price-clp {
   display: block;
   font-size: 0.8rem;
