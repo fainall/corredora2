@@ -29,7 +29,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="preconnect" href="https://images.unsplash.com">
-  <link rel="stylesheet" href="css/styles-v2.css?v=20260521h">
+  <link rel="stylesheet" href="css/styles-v2.css?v=20260521i">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
         integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA=="
         crossorigin="anonymous" referrerpolicy="no-referrer">
@@ -619,7 +619,7 @@
                     <input type="text" id="fPrice" required placeholder="Ej: 120,5" oninput="updateUFConversion()" inputmode="decimal">
                   </div>
                   <div class="uf-conversion-hint" id="ufConversionHint"></div>
-                  <label class="iva-toggle"><input type="checkbox" id="fPriceIva" checked> <span>El precio es <strong>+IVA</strong></span></label>
+                  <label class="iva-toggle"><input type="checkbox" id="fPriceIva" checked> <span>Mostrar <strong>+IVA</strong> en el precio <small>— desmárcalo si el valor está <strong>exento de IVA</strong></small></span></label>
                 </div>
                 <!-- Gastos Comunes -->
                 <div class="form-group">
@@ -632,7 +632,7 @@
                     <input type="text" id="fGastos" placeholder="Ej: 15" oninput="updateGastosConversion()" inputmode="decimal">
                   </div>
                   <div class="uf-conversion-hint" id="gastosConversionHint"></div>
-                  <label class="iva-toggle"><input type="checkbox" id="fGastosIva"> <span>Gastos comunes <strong>+IVA</strong></span></label>
+                  <label class="iva-toggle"><input type="checkbox" id="fGastosIva"> <span>Mostrar <strong>+IVA</strong> en gastos comunes <small>— desmárcalo si están exentos</small></span></label>
                 </div>
                 <div class="form-group">
                   <label>Ubicacion *</label>
@@ -993,6 +993,6 @@
   </footer>
 
   <script src="js/mysql-client.js"></script>
-  <script src="js/app-v2.js?v=20260521h"></script>
+  <script src="js/app-v2.js?v=20260521i"></script>
 </body>
 </html>

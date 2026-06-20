@@ -2335,8 +2335,10 @@ body > #page-listings .card-feature { color: var(--text-light); }
   cursor: pointer;
   margin: 0;
 }
+.iva-toggle { border-radius: 12px; }
 .iva-toggle span { font-weight: 500; color: inherit; }
 .iva-toggle strong { color: var(--primary); font-weight: 700; }
+.iva-toggle small { font-weight: 400; opacity: 0.72; font-size: 0.82em; }
 body.light-mode .iva-toggle { color: #1a1a1a !important; }
 .form-group textarea { resize: vertical; }
 
