@@ -240,6 +240,9 @@ function prop_from_db(array $r): array {
         'pricePerM2'           => as_float_or_null($r['price_per_m2'] ?? null),
         'propertyCode'         => $r['property_code'] ?? '',
         'portalCode'           => $r['portal_code'] ?? null,
+        'frente'               => as_float_or_null($r['frente'] ?? null),
+        'fondo'                => as_float_or_null($r['fondo'] ?? null),
+        'formaTerreno'         => $r['forma_terreno'] ?? null,
         'image'                => $r['image'] ?? '',
         'gallery'              => as_array($r['gallery'] ?? []),
         'description'          => $r['description'] ?? '',
@@ -289,6 +292,9 @@ function prop_payload_to_db(array $p): array {
         ['price_per_m2',           as_float_or_null($p['pricePerM2']     ?? null), 'd'],
         ['property_code',          as_string_or_null($p['propertyCode']  ?? null), 's'],
         ['portal_code',            as_string_or_null($p['portalCode']    ?? null), 's'],
+        ['frente',                 as_float_or_null($p['frente']         ?? null), 'd'],
+        ['fondo',                  as_float_or_null($p['fondo']          ?? null), 'd'],
+        ['forma_terreno',          as_string_or_null($p['formaTerreno']  ?? null), 's'],
         ['image',                  as_string_or_null($p['image']         ?? null), 's'],
         ['gallery',                json_encode(as_array($p['gallery']    ?? []), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES), 's'],
         ['description',            as_string_or_null($p['description']   ?? null), 's'],
@@ -411,12 +417,22 @@ function handle_properties() {
     ok(array_map('prop_from_db', $rows));
 }
 
+// Garantiza que existan las columnas de terreno (MariaDB soporta IF NOT EXISTS).
+// Se llama solo al guardar (admin), no en lecturas públicas.
+function ensure_property_columns(mysqli $db): void {
+    @$db->query("ALTER TABLE properties
+        ADD COLUMN IF NOT EXISTS frente DECIMAL(10,2) DEFAULT NULL,
+        ADD COLUMN IF NOT EXISTS fondo DECIMAL(10,2) DEFAULT NULL,
+        ADD COLUMN IF NOT EXISTS forma_terreno VARCHAR(50) DEFAULT NULL");
+}
+
 function handle_save_property() {
     require_auth();
     $b = read_json_body();
     if (empty($b)) fail('Body vacío', 400);
 
     $db = db();
+    ensure_property_columns($db);
     $payload = prop_payload_to_db($b);
     $cols    = $payload['cols'];
     $vals    = $payload['vals'];

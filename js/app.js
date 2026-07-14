@@ -1193,6 +1193,9 @@ function renderDetail(propId) {
                 ${prop.age > 0 ? `<div class="spec-row"><span class="spec-label"><i class="fas fa-calendar"></i> Antigüedad:</span><span class="spec-val">${prop.age} año${prop.age !== 1 ? 's' : ''}</span></div>` : ''}
                 ${prop.privateRooms > 0 ? `<div class="spec-row"><span class="spec-label"><i class="fas fa-door-closed"></i> Privados:</span><span class="spec-val">${prop.privateRooms}</span></div>` : ''}
                 ${prop.pricePerM2 > 0 ? `<div class="spec-row"><span class="spec-label"><i class="fas fa-calculator"></i> Tarifa m²:</span><span class="spec-val">UF ${formatUF3(prop.pricePerM2)}</span></div>` : ''}
+                ${prop.frente > 0 ? `<div class="spec-row"><span class="spec-label"><i class="fas fa-ruler-horizontal"></i> Metros de frente:</span><span class="spec-val">${prop.frente} m</span></div>` : ''}
+                ${prop.fondo > 0 ? `<div class="spec-row"><span class="spec-label"><i class="fas fa-ruler-vertical"></i> Metros de fondo:</span><span class="spec-val">${prop.fondo} m</span></div>` : ''}
+                ${prop.formaTerreno ? `<div class="spec-row"><span class="spec-label"><i class="fas fa-draw-polygon"></i> Forma del terreno:</span><span class="spec-val">${escapeHtml(prop.formaTerreno)}</span></div>` : ''}
                 ${prop.propertyCode ? `<div class="spec-row"><span class="spec-label"><i class="fas fa-hashtag"></i> Cód. propiedad:</span><span class="spec-val">${escapeHtml(prop.propertyCode)}</span></div>` : ''}
                 ${prop.portalCode ? `<div class="spec-row"><span class="spec-label"><i class="fas fa-globe"></i> Código Portal Inmobiliario:</span><span class="spec-val">${escapeHtml(prop.portalCode)}</span></div>` : ''}
               </div>
@@ -1752,6 +1755,10 @@ function saveProperty(e) {
     pricePerM2: parseDecimalInput(document.getElementById('fPricePerM2').value) || null,
     propertyCode: document.getElementById('fPropertyCode').value.trim(),
     portalCode: document.getElementById('fPortalCode')?.value.trim() || null,
+    // Campos específicos de terrenos
+    frente: parseDecimalInput(document.getElementById('fFrente')?.value) || null,
+    fondo: parseDecimalInput(document.getElementById('fFondo')?.value) || null,
+    formaTerreno: document.getElementById('fFormaTerreno')?.value || null,
     image: '', // se llena tras subir
     gallery: [], // se llena tras subir
     description: document.getElementById('fDesc').value.trim(),
@@ -1847,6 +1854,10 @@ function editProperty(id) {
   document.getElementById('fPricePerM2').value = prop.pricePerM2 != null ? String(prop.pricePerM2).replace('.', ',') : '';
   document.getElementById('fPropertyCode').value = prop.propertyCode || '';
   if (document.getElementById('fPortalCode')) document.getElementById('fPortalCode').value = prop.portalCode || '';
+  // Campos de terreno
+  if (document.getElementById('fFrente')) document.getElementById('fFrente').value = prop.frente != null ? String(prop.frente).replace('.', ',') : '';
+  if (document.getElementById('fFondo')) document.getElementById('fFondo').value = prop.fondo != null ? String(prop.fondo).replace('.', ',') : '';
+  if (document.getElementById('fFormaTerreno')) document.getElementById('fFormaTerreno').value = prop.formaTerreno || '';
   // Imagen principal y galería → cargar previews
   setMainImageFromUrl(prop.image || '');
   setGalleryFromUrls(prop.gallery || []);
