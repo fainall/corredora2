@@ -1755,10 +1755,10 @@ function saveProperty(e) {
     pricePerM2: parseDecimalInput(document.getElementById('fPricePerM2').value) || null,
     propertyCode: document.getElementById('fPropertyCode').value.trim(),
     portalCode: document.getElementById('fPortalCode')?.value.trim() || null,
-    // Campos específicos de terrenos
-    frente: parseDecimalInput(document.getElementById('fFrente')?.value) || null,
-    fondo: parseDecimalInput(document.getElementById('fFondo')?.value) || null,
-    formaTerreno: document.getElementById('fFormaTerreno')?.value || null,
+    // Campos específicos de terrenos (solo si el check "Terreno Industrial" está activo)
+    frente: document.getElementById('fIsTerreno')?.checked ? (parseDecimalInput(document.getElementById('fFrente')?.value) || null) : null,
+    fondo: document.getElementById('fIsTerreno')?.checked ? (parseDecimalInput(document.getElementById('fFondo')?.value) || null) : null,
+    formaTerreno: document.getElementById('fIsTerreno')?.checked ? (document.getElementById('fFormaTerreno')?.value || null) : null,
     image: '', // se llena tras subir
     gallery: [], // se llena tras subir
     description: document.getElementById('fDesc').value.trim(),
@@ -1854,10 +1854,13 @@ function editProperty(id) {
   document.getElementById('fPricePerM2').value = prop.pricePerM2 != null ? String(prop.pricePerM2).replace('.', ',') : '';
   document.getElementById('fPropertyCode').value = prop.propertyCode || '';
   if (document.getElementById('fPortalCode')) document.getElementById('fPortalCode').value = prop.portalCode || '';
-  // Campos de terreno
+  // Campos de terreno: activar el check si es tipo Terreno o ya tiene datos de terreno
+  const esTerreno = prop.type === 'Terreno' || prop.frente != null || prop.fondo != null || !!prop.formaTerreno;
+  if (document.getElementById('fIsTerreno')) document.getElementById('fIsTerreno').checked = esTerreno;
   if (document.getElementById('fFrente')) document.getElementById('fFrente').value = prop.frente != null ? String(prop.frente).replace('.', ',') : '';
   if (document.getElementById('fFondo')) document.getElementById('fFondo').value = prop.fondo != null ? String(prop.fondo).replace('.', ',') : '';
   if (document.getElementById('fFormaTerreno')) document.getElementById('fFormaTerreno').value = prop.formaTerreno || '';
+  toggleTerrenoFields();
   // Imagen principal y galería → cargar previews
   setMainImageFromUrl(prop.image || '');
   setGalleryFromUrls(prop.gallery || []);
@@ -1898,7 +1901,17 @@ function resetForm() {
   const h2 = document.getElementById('gastosConversionHint');
   if (h1) { h1.textContent = ''; h1.style.display = 'none'; }
   if (h2) { h2.textContent = ''; h2.style.display = 'none'; }
+  // Campos de terreno ocultos por defecto
+  toggleTerrenoFields();
   updatePriceLabel();
+}
+
+// Muestra/oculta los campos exclusivos de terrenos industriales según el check
+function toggleTerrenoFields() {
+  const on = document.getElementById('fIsTerreno')?.checked;
+  document.querySelectorAll('.terreno-field').forEach(el => {
+    el.style.display = on ? '' : 'none';
+  });
 }
 
 // ===================== DUPLICATE =====================
