@@ -2203,6 +2203,15 @@ body > #page-listings .card-feature { color: var(--text-light); }
 .table-btn.view:hover { background: var(--primary); color: white; border-color: transparent; }
 .table-btn.duplicate { background: rgba(155,89,182,0.15); color: #b07cc6; border: 1px solid rgba(155,89,182,0.2); }
 .table-btn.duplicate:hover { background: #9b59b6; color: white; border-color: transparent; }
+/* Estrella de destacar: gris cuando no está, dorada cuando sí */
+.table-btn.star { background: rgba(150,160,170,0.12); color: #9aa5b0; border: 1px solid rgba(150,160,170,0.2); }
+.table-btn.star:hover { background: rgba(245,178,7,0.2); color: #f1a807; border-color: rgba(245,178,7,0.35); }
+.table-btn.star.active { background: #f5b207; color: #fff; border-color: transparent; box-shadow: 0 2px 8px rgba(245,178,7,0.4); }
+.table-btn.star.active:hover { background: #e0a300; color: #fff; }
+/* Toggle de destacar en el formulario: estrella dorada */
+.featured-toggle { background: rgba(245,178,7,0.08); border-color: rgba(245,178,7,0.25); }
+.featured-toggle:hover { background: rgba(245,178,7,0.14); border-color: rgba(245,178,7,0.4); }
+.featured-toggle strong, .featured-toggle .fa-star { color: #f1a807; }
 
 /* ===================== MODAL ===================== */
 .modal-overlay {

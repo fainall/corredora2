@@ -1017,12 +1017,16 @@ function renderHome() {
   // Hero: poblar dropdown de comunas con valores únicos de la DB
   populateHeroLocations(props);
 
-  // Sección Destacadas
+  // Sección Destacadas: SOLO las que el admin marcó como destacadas (a elección)
   const featuredGrid = document.getElementById('featuredGrid');
+  const featuredProps = props.filter(p => p.featured);
   if (featuredGrid) {
     featuredGrid.innerHTML = '';
-    props.slice(0, 6).forEach(p => featuredGrid.appendChild(createPropertyCard(p)));
+    featuredProps.slice(0, 12).forEach(p => featuredGrid.appendChild(createPropertyCard(p)));
   }
+  // Ocultar toda la sección si no hay ninguna destacada
+  const sectionDestacadas = document.getElementById('sectionDestacadas');
+  if (sectionDestacadas) sectionDestacadas.style.display = featuredProps.length === 0 ? 'none' : '';
 
   // Sección Arriendo
   const arriendoGrid = document.getElementById('arriendoGrid');
@@ -1363,6 +1367,7 @@ function renderDashList() {
       <td>${escapeHtml(p.location)}</td>
       <td>
         <div class="table-actions">
+          <button class="table-btn star ${p.featured ? 'active' : ''}" title="${p.featured ? 'Quitar de Destacadas' : 'Destacar en portada'}" onclick="toggleFeatured(${p.id})"><i class="fas fa-star"></i></button>
           <button class="table-btn view" title="Ver" onclick="showPage('detail', ${p.id})"><i class="fas fa-eye"></i></button>
           <button class="table-btn edit" title="Editar" onclick="editProperty(${p.id})"><i class="fas fa-edit"></i></button>
           <button class="table-btn duplicate" title="Duplicar" onclick="duplicateProperty(${p.id})"><i class="fas fa-clone"></i></button>
@@ -1371,6 +1376,22 @@ function renderDashList() {
       </td>
     </tr>
   `).join('');
+}
+
+// Destacar / quitar destacado de una propiedad (toggle rápido desde la tabla)
+async function toggleFeatured(id) {
+  if (!isLoggedIn()) return;
+  const prop = getProperties().find(p => p.id === id);
+  if (!prop) return;
+  const newVal = !prop.featured;
+  try {
+    await window.GPRB_SB.updateProperty(id, { ...prop, featured: newVal });
+    prop.featured = newVal; // actualizar cache local
+    renderDashboard();
+    showToast(newVal ? '⭐ Propiedad destacada en portada' : 'Propiedad quitada de Destacadas');
+  } catch (e) {
+    showToast('Error: ' + (e.message || 'no se pudo actualizar'));
+  }
 }
 
 function switchDashTab(tab, keepForm = false) {
@@ -1765,7 +1786,8 @@ function saveProperty(e) {
     videoUrl: document.getElementById('fVideoUrl')?.value.trim() || null,
     services: services,
     amenities: amenities,
-    security: security
+    security: security,
+    featured: document.getElementById('fFeatured')?.checked === true
   };
 
   (async () => {
@@ -1827,6 +1849,7 @@ function editProperty(id) {
   document.getElementById('fTitle').value = prop.title || '';
   document.getElementById('fType').value = prop.type || '';
   document.getElementById('fStatus').value = prop.status || 'Arriendo';
+  if (document.getElementById('fFeatured')) document.getElementById('fFeatured').checked = !!prop.featured;
   // Precio con soporte UF/CLP y coma
   if (document.getElementById('fPriceUnit')) document.getElementById('fPriceUnit').value = prop.priceUnit || 'UF';
   document.getElementById('fPrice').value = prop.price != null ? String(prop.price).replace('.', ',') : '';
