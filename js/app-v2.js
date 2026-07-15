@@ -1180,6 +1180,7 @@ function renderDetail(propId) {
               ${prop.areaBodega > 0 ? `<div class="detail-feature"><i class="fas fa-warehouse"></i><strong>${prop.areaBodega.toLocaleString('es-CL')}m²</strong><span>Bodega</span></div>` : ''}
               ${prop.areaOficina > 0 ? `<div class="detail-feature"><i class="fas fa-briefcase"></i><strong>${prop.areaOficina.toLocaleString('es-CL')}m²</strong><span>Oficina</span></div>` : ''}
               ${prop.areaAltillo > 0 ? `<div class="detail-feature"><i class="fas fa-layer-group"></i><strong>${prop.areaAltillo.toLocaleString('es-CL')}m²</strong><span>Altillo</span></div>` : ''}
+              ${prop.areaPatio > 0 ? `<div class="detail-feature"><i class="fas fa-vector-square"></i><strong>${prop.areaPatio.toLocaleString('es-CL')}m²</strong><span>Patio${prop.patioSumaTotal ? '' : ' (no suma)'}</span></div>` : ''}
               ${prop.area > 0 ? `<div class="detail-feature"><i class="fas fa-ruler-combined"></i><strong>${prop.area.toLocaleString('es-CL')}m²</strong><span>Total</span></div>` : ''}
               ${prop.parking > 0 ? `<div class="detail-feature"><i class="fas fa-car"></i><strong>${prop.parking}</strong><span>Estac.</span></div>` : ''}
               ${prop.bathrooms > 0 ? `<div class="detail-feature"><i class="fas fa-bath"></i><strong>${prop.bathrooms}</strong><span>Baños</span></div>` : ''}
@@ -1762,6 +1763,8 @@ function saveProperty(e) {
     areaBodega: parseDecimalInput(document.getElementById('fAreaBodega')?.value) || null,
     areaOficina: parseDecimalInput(document.getElementById('fAreaOficina')?.value) || null,
     areaAltillo: parseDecimalInput(document.getElementById('fAreaAltillo')?.value) || null,
+    areaPatio: parseDecimalInput(document.getElementById('fAreaPatio')?.value) || null,
+    patioSumaTotal: document.getElementById('fPatioSuma')?.checked === true,
     usableArea: parseDecimalInput(document.getElementById('fArea').value) || 0, // usar área total como usable si no hay otro
     bathrooms: parseInt(document.getElementById('fBathrooms').value) || 0,
     parking: parseInt(document.getElementById('fParking').value) || 0,
@@ -1864,6 +1867,9 @@ function editProperty(id) {
   if (document.getElementById('fAreaBodega')) document.getElementById('fAreaBodega').value = prop.areaBodega != null ? String(prop.areaBodega).replace('.', ',') : '';
   if (document.getElementById('fAreaOficina')) document.getElementById('fAreaOficina').value = prop.areaOficina != null ? String(prop.areaOficina).replace('.', ',') : '';
   if (document.getElementById('fAreaAltillo')) document.getElementById('fAreaAltillo').value = prop.areaAltillo != null ? String(prop.areaAltillo).replace('.', ',') : '';
+  if (document.getElementById('fAreaPatio')) document.getElementById('fAreaPatio').value = prop.areaPatio != null ? String(prop.areaPatio).replace('.', ',') : '';
+  if (document.getElementById('fPatioSuma')) document.getElementById('fPatioSuma').checked = prop.patioSumaTotal === true;
+  if (document.getElementById('fAreaTerreno')) document.getElementById('fAreaTerreno').value = (prop.type === 'Terreno' && prop.area != null) ? String(prop.area).replace('.', ',') : '';
   document.getElementById('fArea').value = prop.area != null ? String(prop.area).replace('.', ',') : '';
   document.getElementById('fBathrooms').value = prop.bathrooms || '';
   document.getElementById('fParking').value = prop.parking || '';
@@ -2585,10 +2591,20 @@ function calcSuperficieTotal() {
   const bodega  = parseDecimalInput(document.getElementById('fAreaBodega')?.value)  || 0;
   const oficina = parseDecimalInput(document.getElementById('fAreaOficina')?.value) || 0;
   const altillo = parseDecimalInput(document.getElementById('fAreaAltillo')?.value) || 0;
-  // Suma bodega + altillo siempre; oficina solo si > 0
-  const total = bodega + (oficina > 0 ? oficina : 0) + altillo;
+  const patio   = parseDecimalInput(document.getElementById('fAreaPatio')?.value)   || 0;
+  const sumarPatio = document.getElementById('fPatioSuma')?.checked === true;
+  // Suma bodega + altillo siempre; oficina solo si > 0; patio solo si el check está marcado
+  const total = bodega + (oficina > 0 ? oficina : 0) + altillo + (sumarPatio ? patio : 0);
   if (total > 0) {
     document.getElementById('fArea').value = String(total).replace('.', ',');
+  }
+}
+
+// Para terrenos: la Superficie del Terreno define directamente la Superficie Total
+function setTerrenoArea() {
+  const t = document.getElementById('fAreaTerreno')?.value;
+  if (t != null && t !== '') {
+    document.getElementById('fArea').value = t;
   }
 }
 

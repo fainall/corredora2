@@ -225,6 +225,8 @@ function prop_from_db(array $r): array {
         'areaBodega'           => as_float_or_null($r['area_bodega'] ?? null),
         'areaOficina'          => as_float_or_null($r['area_oficina'] ?? null),
         'areaAltillo'          => as_float_or_null($r['area_altillo'] ?? null),
+        'areaPatio'            => as_float_or_null($r['area_patio'] ?? null),
+        'patioSumaTotal'       => (int)($r['patio_suma_total'] ?? 0) === 1,
         'usableArea'           => as_float_or_null($r['usable_area'] ?? null),
         'bathrooms'            => (int)($r['bathrooms'] ?? 0),
         'parking'              => (int)($r['parking'] ?? 0),
@@ -277,6 +279,8 @@ function prop_payload_to_db(array $p): array {
         ['area_bodega',            as_float_or_null($p['areaBodega']     ?? null), 'd'],
         ['area_oficina',           as_float_or_null($p['areaOficina']    ?? null), 'd'],
         ['area_altillo',           as_float_or_null($p['areaAltillo']    ?? null), 'd'],
+        ['area_patio',             as_float_or_null($p['areaPatio']      ?? null), 'd'],
+        ['patio_suma_total',       !empty($p['patioSumaTotal']) ? 1 : 0, 'i'],
         ['usable_area',            as_float_or_null($p['usableArea']     ?? null), 'd'],
         ['bathrooms',              as_int_or_null($p['bathrooms']        ?? null), 'i'],
         ['parking',                as_int_or_null($p['parking']          ?? null), 'i'],
@@ -423,7 +427,9 @@ function ensure_property_columns(mysqli $db): void {
     @$db->query("ALTER TABLE properties
         ADD COLUMN IF NOT EXISTS frente DECIMAL(10,2) DEFAULT NULL,
         ADD COLUMN IF NOT EXISTS fondo DECIMAL(10,2) DEFAULT NULL,
-        ADD COLUMN IF NOT EXISTS forma_terreno VARCHAR(50) DEFAULT NULL");
+        ADD COLUMN IF NOT EXISTS forma_terreno VARCHAR(50) DEFAULT NULL,
+        ADD COLUMN IF NOT EXISTS area_patio DECIMAL(10,2) DEFAULT NULL,
+        ADD COLUMN IF NOT EXISTS patio_suma_total TINYINT(1) DEFAULT 0");
 }
 
 function handle_save_property() {

@@ -29,7 +29,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="preconnect" href="https://images.unsplash.com">
-  <link rel="stylesheet" href="css/styles-v2.css?v=20260521n">
+  <link rel="stylesheet" href="css/styles-v2.css?v=20260521o">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
         integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA=="
         crossorigin="anonymous" referrerpolicy="no-referrer">
@@ -665,8 +665,15 @@
                   <input type="text" id="fAreaAltillo" placeholder="Ej: 60" inputmode="decimal" oninput="calcSuperficieTotal()">
                 </div>
                 <div class="form-group">
+                  <label>m² Patio <small style="opacity:0.6;font-weight:400">(0 si no aplica)</small></label>
+                  <input type="text" id="fAreaPatio" placeholder="Ej: 10" inputmode="decimal" oninput="calcSuperficieTotal()">
+                </div>
+                <div class="form-group">
                   <label>Superficie Total (m²) * <small style="opacity:0.6;font-weight:400">auto-calculado</small></label>
                   <input type="text" id="fArea" required placeholder="Ej: 1.030,5" inputmode="decimal">
+                </div>
+                <div class="form-group full-width">
+                  <label class="iva-toggle"><input type="checkbox" id="fPatioSuma" onchange="calcSuperficieTotal()"> <span>Sumar el <strong>patio</strong> al total de m² <small>— normalmente el patio NO se suma; marca solo si corresponde</small></span></label>
                 </div>
                 <div class="form-group">
                   <label>Baños *</label>
@@ -719,6 +726,10 @@
                 <!-- Check para revelar campos exclusivos de terrenos industriales -->
                 <div class="form-group full-width">
                   <label class="iva-toggle terreno-toggle"><input type="checkbox" id="fIsTerreno" onchange="toggleTerrenoFields()"> <span><i class="fas fa-map-marked-alt"></i> Es <strong>Terreno Industrial</strong> <small>— marca para agregar frente, fondo y forma del terreno</small></span></label>
+                </div>
+                <div class="form-group terreno-field" style="display:none;">
+                  <label>Superficie del Terreno (m²)</label>
+                  <input type="text" id="fAreaTerreno" placeholder="Ej: 5.000" inputmode="decimal" oninput="setTerrenoArea()">
                 </div>
                 <div class="form-group terreno-field" style="display:none;">
                   <label>Metros de Frente (m)</label>
@@ -1017,6 +1028,6 @@
   </footer>
 
   <script src="js/mysql-client.js"></script>
-  <script src="js/app-v2.js?v=20260521n"></script>
+  <script src="js/app-v2.js?v=20260521o"></script>
 </body>
 </html>
