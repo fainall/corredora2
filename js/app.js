@@ -936,10 +936,8 @@ function createPropertyCard(prop) {
     : formatPrice(prop); // fallback: si no hay metraje, mostrar precio
   const favActive = isFavorite(prop.id) ? ' active' : '';
 
-  const features = [];
-  // m² ya se muestra grande en el overlay; en features van estac. y baños
-  if (prop.parking > 0) features.push(`<span class="card-feature"><i class="fas fa-car"></i> ${prop.parking}</span>`);
-  if (prop.bathrooms > 0) features.push(`<span class="card-feature"><i class="fas fa-bath"></i> ${prop.bathrooms}</span>`);
+  // En el cuerpo de la tarjeta va el VALOR (UF + IVA destacado); el metraje va grande sobre la foto
+  const priceText = formatPrice(prop);
 
   const galleryCount = [prop.image, ...(prop.gallery || [])].filter(Boolean).length;
   const galleryBadge = galleryCount > 1
@@ -962,7 +960,7 @@ function createPropertyCard(prop) {
     <div class="card-body">
       <h3>${escapeHtml(prop.title)}</h3>
       <div class="card-location"><i class="fas fa-map-marker-alt"></i> ${escapeHtml(prop.location)}</div>
-      <div class="card-features">${features.join('')}</div>
+      <div class="card-price-body">${priceText}</div>
     </div>
   `;
   const favBtn = card.querySelector('.card-fav');
