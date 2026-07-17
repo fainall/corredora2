@@ -930,11 +930,14 @@ function createPropertyCard(prop) {
     ? '<span class="badge badge-sale">Venta</span>'
     : '<span class="badge badge-rent">Arriendo</span>';
 
-  const priceText = formatPrice(prop);
+  // La tarjeta destaca el METRAJE (lo primero que la gente mira); el precio va en el detalle
+  const metrajeText = prop.area > 0
+    ? `${prop.area.toLocaleString('es-CL')} m²`
+    : formatPrice(prop); // fallback: si no hay metraje, mostrar precio
   const favActive = isFavorite(prop.id) ? ' active' : '';
 
   const features = [];
-  if (prop.area > 0) features.push(`<span class="card-feature"><i class="fas fa-ruler-combined"></i> ${prop.area}m²</span>`);
+  // m² ya se muestra grande en el overlay; en features van estac. y baños
   if (prop.parking > 0) features.push(`<span class="card-feature"><i class="fas fa-car"></i> ${prop.parking}</span>`);
   if (prop.bathrooms > 0) features.push(`<span class="card-feature"><i class="fas fa-bath"></i> ${prop.bathrooms}</span>`);
 
@@ -953,7 +956,7 @@ function createPropertyCard(prop) {
         ${statusBadge}
         <span class="badge badge-type">${escapeHtml(prop.type)}</span>
       </div>
-      <div class="card-price">${priceText}</div>
+      <div class="card-price card-metraje">${metrajeText}</div>
       ${galleryBadge}
     </div>
     <div class="card-body">
