@@ -21,10 +21,10 @@ function propFromDb(r) {
     status: r.status,
     price: Number(r.price),
     priceUnit: r.price_unit || (r.status === 'Arriendo' ? 'UF' : 'CLP'),
-    priceWithIva: r.price_with_iva !== false, // default true
+    priceWithIva: r.price_with_iva !== false,
     gastosComunes: r.gastos_comunes != null ? Number(r.gastos_comunes) : null,
     gastosComunesUnit: r.gastos_comunes_unit || 'UF',
-    gastosComunesWithIva: r.gastos_comunes_with_iva === true, // default false
+    gastosComunesWithIva: r.gastos_comunes_with_iva === true,
     location: r.location,
     address: r.address,
     area: r.area != null ? Number(r.area) : null,
